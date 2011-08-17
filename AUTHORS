@@ -1,0 +1,57 @@
+Author of luakit:
+  Mason Larobina    (mason-l)   <mason.larobina@gmail.com>  2010-2011
+
+Contributors to luakit (A to Z):
+  Alexis Daboville              <alexis.daboville@gmail.com> 2011
+  André Aparício                <aparicio99@gmail.com>      2011
+  Chris van Dijk    (quigybo)   <quigybo@hotmail.com>       2010
+  Clint Adams       (Clint)     <schizo@debian.org>         2010
+  Constantin Schomburg (xconstruct) <me@xconstruct.net>     2011
+  Fabian Streitel               <karottenreibe@gmail.com>   2010-2011
+  Gregor Uhlenheuer (kongo)     <kongo2002@googlemail.com>  2010
+  HarryD                        <harry@anapnea.net>         2010
+  Henning Hasemann              <hhasemann@web.de>          2010
+  Henrik Hallberg   (halhen)    <halhen@k2h.se>             2010
+  Javier Rojas      (jerojasro) <jerojasro@devnull.li>      2011
+  Kumar Appaiah     (kmap)      <a.kumar@alumni.iitm.ac.in> 2010
+  Matthew Wild      (MattJ)     <mwild1@gmail.com>          2010
+  Michael Dietrich  (emdete)    <mdt@emdete.de>             2010
+  Pawel Tomak       (grodzik)   <pawel.tomak@gmail.com>     2010
+  Pawel Zuzelski    (pawelz)    <pawelz@pld-linux.org>      2010
+  Pete Elmore                   <pete@debu.gs>              2010
+  Piotr Husiatyński (husio)     <phusiatynski@gmail.com>    2010
+  Richard Gay                   <richard.gay@t-online.de>   2010
+  Stefan Bolte      (portix)    <portix@gmx.net>            2011
+  Stjujsckij Nickolaj           <sterkrig@home.no>          2011
+  Vasuvi                        <vasuvi@inbox.com>          2010-2011
+
+Author of the JavaScript greasemonkey methods in `lib/userscripts.lua`:
+  Jim Tuttle                                                2009
+
+Author of the `lib/go_input.lua` javascript:
+  Aldrik Dunbar     (n30n)                                  2009
+
+Author of the `lib/follow_selected.lua` javascript:
+  israellevin                                               2009
+
+Inherited authors from the awesomewm project:
+  Julien Danjou                 <julien@danjou.info>        2007-2009
+  Pierre Habouzit               <madcoder@debian.org>       2008
+  Michael Gehring               <mg@ebfe.org>               2008
+  Aldo Cortesi                  <aldo@nullcube.com>         2007-2008
+
+Inherited authors from the uzbl project:
+  Dequis                        <dx@dxzone.com.ar>          2009
+  Dieter Plaetinck  (Dieter@be) <dieter@plaetinck.be>       2009-2010
+  Robert Manea      (robm)      <rob.manea@gmail.com>       2009-2010
+  Simon Lipp        (sloonz)    <sloonz@gmail.com>          2010
+
+Inherited authors from the surf project:
+  Enno Boland       (tox)       <tox@s01.de>                2009-2010
+
+For volumetric graphs on specific contributers "impact" checkout:
+  https://github.com/mason-larobina/luakit/graphs/impact
+
+If you believe you should be in this file or notice that I have missed an
+attribution to somebody else please contact me (Mason) or email me a patch
+for his file with your/his/her name or names inserted.
