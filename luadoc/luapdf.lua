@@ -1,27 +1,27 @@
---- luakit core API
+--- luapdf core API
 -- @author Mason Larobina &lt;mason.larobina&lt;AT&gt;gmail.com&gt;
 -- @author Paweł Zuzelski &lt;pawelz&lt;AT&gt;pld-linux.org&gt;
 -- @copyright 2010 Mason Larobina, Paweł Zuzelski
-module("luakit")
+module("luapdf")
 
 --- Luakit global table
 -- @field config_dir config directory path (default: XDG_CONFIG_HOME)
 -- @field data_dir data directory path (default: XDG_DATA_HOME)
 -- @field cache_dir cache directory path (default: XDG_CACHE_HOME)
 -- @field verbose verbosity (boolean value)
--- @field install_path luakit installation path (read only property)
--- @field version luakit version (read only property)
--- @field webkit_major_version webkit major version that luakit is linked against (read only property)
--- @field webkit_minor_version webkit minor version that luakit is linked against (read only property)
--- @field webkit_micro_version webkit micro version that luakit is linked against (read only property)
+-- @field install_path luapdf installation path (read only property)
+-- @field version luapdf version (read only property)
+-- @field webkit_major_version webkit major version that luapdf is linked against (read only property)
+-- @field webkit_minor_version webkit minor version that luapdf is linked against (read only property)
+-- @field webkit_micro_version webkit micro version that luapdf is linked against (read only property)
 -- @class table
--- @name luakit
+-- @name luapdf
 
 --- All active window widgets
 -- @class table
 -- @name windows
 
---- Quit luakit
+--- Quit luapdf
 -- @param -
 -- @name quit
 -- @class function

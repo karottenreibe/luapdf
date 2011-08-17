@@ -1,5 +1,5 @@
 /*
- * luakit.c - luakit main functions
+ * luapdf.c - luapdf main functions
  *
  * Copyright © 2010-2011 Mason Larobina <mason.larobina@gmail.com>
  *
@@ -62,16 +62,16 @@ init_lua(gchar **uris)
 void
 init_directories(void)
 {
-    /* create luakit directory */
-    globalconf.cache_dir  = g_build_filename(g_get_user_cache_dir(),  "luakit", NULL);
-    globalconf.config_dir = g_build_filename(g_get_user_config_dir(), "luakit", NULL);
-    globalconf.data_dir   = g_build_filename(g_get_user_data_dir(),   "luakit", NULL);
+    /* create luapdf directory */
+    globalconf.cache_dir  = g_build_filename(g_get_user_cache_dir(),  "luapdf", NULL);
+    globalconf.config_dir = g_build_filename(g_get_user_config_dir(), "luapdf", NULL);
+    globalconf.data_dir   = g_build_filename(g_get_user_data_dir(),   "luapdf", NULL);
     g_mkdir_with_parents(globalconf.cache_dir,  0771);
     g_mkdir_with_parents(globalconf.config_dir, 0771);
     g_mkdir_with_parents(globalconf.data_dir,   0771);
 }
 
-/* load command line options into luakit and return uris to load */
+/* load command line options into luapdf and return uris to load */
 gchar**
 parseopts(int argc, gchar *argv[], gboolean **nonblock) {
     GOptionContext *context;
@@ -79,7 +79,7 @@ parseopts(int argc, gchar *argv[], gboolean **nonblock) {
     gboolean *check_only = NULL;
     gchar **uris = NULL;
 
-    /* save luakit exec path */
+    /* save luapdf exec path */
     globalconf.execpath = g_strdup(argv[0]);
     globalconf.nounique = FALSE;
 
@@ -99,14 +99,14 @@ parseopts(int argc, gchar *argv[], gboolean **nonblock) {
     context = g_option_context_new("[URI...]");
     g_option_context_add_main_entries(context, entries, NULL);
     g_option_context_add_group(context, gtk_get_option_group(FALSE));
-    // TODO Passing gtk options (like --sync) to luakit causes a segfault right
+    // TODO Passing gtk options (like --sync) to luapdf causes a segfault right
     // here. I'm clueless.
     g_option_context_parse(context, &argc, &argv, NULL);
     g_option_context_free(context);
 
     /* print version and exit */
     if (version_only) {
-        g_printf("luakit %s\n", VERSION);
+        g_printf("luapdf %s\n", VERSION);
         exit(EXIT_SUCCESS);
     }
 
@@ -147,7 +147,7 @@ main(gint argc, gchar *argv[]) {
         fatal("Can't install SIGCHLD handler");
 
     /* set numeric locale to C (required for compatibility with
-       LuaJIT and luakit scripts) */
+       LuaJIT and luapdf scripts) */
     gtk_set_locale();
     gtk_disable_setlocale();
     setlocale(LC_NUMERIC, "C");

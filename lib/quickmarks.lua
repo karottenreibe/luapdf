@@ -15,17 +15,17 @@ local tostring = tostring
 local type = type
 local table = table
 
--- Get luakit environment
+-- Get luapdf environment
 local lousy = require "lousy"
 local window = window
 local add_binds, add_cmds = add_binds, add_cmds
 local new_mode, menu_binds = new_mode, menu_binds
-local capi = { luakit = luakit }
+local capi = { luapdf = luapdf }
 
 module("quickmarks")
 
 local qmarks
-local quickmarks_file = capi.luakit.data_dir .. '/quickmarks'
+local quickmarks_file = capi.luapdf.data_dir .. '/quickmarks'
 
 local function check_token(token)
     assert(string.match(tostring(token), "^(%w)$"), "invalid token: " .. tostring(token))

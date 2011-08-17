@@ -15,11 +15,11 @@ local getmetatable = getmetatable
 local assert = assert
 local rawset = rawset
 
--- Get luakit environment
+-- Get luapdf environment
 local util = require "lousy.util"
 local capi = { soup = soup }
-local uri_encode = luakit.uri_encode
-local uri_decode = luakit.uri_decode
+local uri_encode = luapdf.uri_encode
+local uri_decode = luapdf.uri_decode
 
 module "lousy.uri"
 

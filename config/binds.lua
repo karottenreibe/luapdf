@@ -14,7 +14,7 @@ local strip, split = lousy.util.string.strip, lousy.util.string.split
 local scroll_step = globals.scroll_step or 20
 local more, less = "+"..scroll_step.."px", "-"..scroll_step.."px"
 local zoom_step = globals.zoom_step or 0.1
-local homepage = globals.homepage or "http://luakit.org"
+local homepage = globals.homepage or "http://luapdf.org"
 
 -- Add binds to a mode
 function add_binds(mode, binds, before)
@@ -67,7 +67,7 @@ add_binds("all", {
             if uri then
                 w:new_tab(uri, false)
             else -- Open selection in current tab
-                uri = luakit.selection.primary
+                uri = luapdf.selection.primary
                 if uri then w:navigate(w:search_open(uri)) end
             end
         end
@@ -165,11 +165,11 @@ add_binds("normal", {
 
     -- Clipboard
     key({},          "p",           function (w)
-                                        local uri = luakit.selection.primary
+                                        local uri = luapdf.selection.primary
                                         if uri then w:navigate(w:search_open(uri)) else w:error("Empty selection.") end
                                     end),
     key({},          "P",           function (w, m)
-                                        local uri = luakit.selection.primary
+                                        local uri = luapdf.selection.primary
                                         if not uri then w:error("Empty selection.") return end
                                         for i = 1, m.count do w:new_tab(w:search_open(uri)) end
                                     end, {count = 1}),
@@ -177,13 +177,13 @@ add_binds("normal", {
     -- Yanking
     buf("^yy$",                     function (w)
                                         local uri = string.gsub(w:get_current().uri or "", " ", "%%20")
-                                        luakit.selection.primary = uri
+                                        luapdf.selection.primary = uri
                                         w:notify("Yanked uri: " .. uri)
                                     end),
 
     buf("^yt$",                     function (w)
                                         local title = w:get_current():get_property("title")
-                                        luakit.selection.primary = title
+                                        luapdf.selection.primary = title
                                         w:notify("Yanked title: " .. title)
                                     end),
 
@@ -251,7 +251,7 @@ add_binds("insert", {
 })
 
 add_binds({"command", "search"}, {
-    key({"Shift"},   "Insert",  function (w) w:insert_cmd(luakit.selection.primary) end),
+    key({"Shift"},   "Insert",  function (w) w:insert_cmd(luapdf.selection.primary) end),
     key({"Control"}, "w",       function (w) w:del_word() end),
     key({"Control"}, "u",       function (w) w:del_line() end),
     key({"Control"}, "h",       function (w) w:del_backward_char() end),
@@ -315,8 +315,8 @@ add_cmds({
 
     cmd("dump", function (w, a)
         local fname = string.gsub(w.win.title, '[^%w%.%-]', '_')..'.html' -- sanitize filename
-        local downdir = luakit.get_special_dir("DOWNLOAD") or "."
-        local file = a or luakit.save_file("Save file", w.win, downdir, fname)
+        local downdir = luapdf.get_special_dir("DOWNLOAD") or "."
+        local file = a or luapdf.save_file("Save file", w.win, downdir, fname)
         if file then
             local fd = assert(io.open(file, "w"), "failed to open: " .. file)
             local html = assert(w:eval_js("document.documentElement.outerHTML", "dump"), "Unable to get HTML")

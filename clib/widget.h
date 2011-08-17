@@ -31,7 +31,7 @@ typedef struct widget_t widget_t;
 
 #include <gtk/gtk.h>
 
-typedef widget_t *(widget_constructor_t)(widget_t *, luakit_token_t);
+typedef widget_t *(widget_constructor_t)(widget_t *, luapdf_token_t);
 typedef void (widget_destructor_t)(widget_t *);
 
 widget_constructor_t widget_box;
@@ -45,7 +45,7 @@ widget_constructor_t widget_window;
 widget_constructor_t widget_socket;
 
 typedef const struct {
-    luakit_token_t tok;
+    luapdf_token_t tok;
     const gchar *name;
     widget_constructor_t *wc;
 } widget_info_t;
@@ -59,9 +59,9 @@ struct widget_t
     /* Widget destructor */
     widget_destructor_t *destructor;
     /* Index function */
-    gint (*index)(lua_State *, luakit_token_t);
+    gint (*index)(lua_State *, luapdf_token_t);
     /* Newindex function */
-    gint (*newindex)(lua_State *, luakit_token_t);
+    gint (*newindex)(lua_State *, luapdf_token_t);
     /* Lua object ref */
     gpointer ref;
     /* Main gtk widget */

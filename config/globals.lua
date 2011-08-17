@@ -1,7 +1,7 @@
--- Global variables for luakit
+-- Global variables for luapdf
 globals = {
-    homepage            = "http://luakit.org/",
- -- homepage            = "http://github.com/mason-larobina/luakit",
+    homepage            = "http://luapdf.org/",
+ -- homepage            = "http://github.com/mason-larobina/luapdf",
     scroll_step         = 40,
     zoom_step           = 0.1,
     max_cmd_history     = 100,
@@ -16,16 +16,16 @@ globals = {
 }
 
 -- Make useragent
-local arch = string.match(({luakit.spawn_sync("uname -sm")})[2], "([^\n]*)")
-local lkv  = string.format("luakit/%s", luakit.version)
-local wkv  = string.format("WebKitGTK+/%d.%d.%d", luakit.webkit_major_version, luakit.webkit_minor_version, luakit.webkit_micro_version)
-local awkv = string.format("AppleWebKit/%s.%s+", luakit.webkit_user_agent_major_version, luakit.webkit_user_agent_minor_version)
+local arch = string.match(({luapdf.spawn_sync("uname -sm")})[2], "([^\n]*)")
+local lkv  = string.format("luapdf/%s", luapdf.version)
+local wkv  = string.format("WebKitGTK+/%d.%d.%d", luapdf.webkit_major_version, luapdf.webkit_minor_version, luapdf.webkit_micro_version)
+local awkv = string.format("AppleWebKit/%s.%s+", luapdf.webkit_user_agent_major_version, luapdf.webkit_user_agent_minor_version)
 globals.useragent = string.format("Mozilla/5.0 (%s) %s %s %s", arch, awkv, wkv, lkv)
 
 -- Search common locations for a ca file which is used for ssl connection validation.
 local ca_files = {
-    -- $XDG_DATA_HOME/luakit/ca-certificates.crt
-    luakit.data_dir .. "/ca-certificates.crt",
+    -- $XDG_DATA_HOME/luapdf/ca-certificates.crt
+    luapdf.data_dir .. "/ca-certificates.crt",
     "/etc/certs/ca-certificates.crt",
     "/etc/ssl/certs/ca-certificates.crt",
 }
@@ -50,7 +50,7 @@ soup.set_property("accept-policy", cookie_policy.always)
 -- it to avoid collisions with lua's string.format characters.
 -- See: http://www.lua.org/manual/5.1/manual.html#pdf-string.format
 search_engines = {
-    luakit      = "http://luakit.org/search/index/luakit?q=%s",
+    luapdf      = "http://luapdf.org/search/index/luapdf?q=%s",
     google      = "http://google.com/search?q=%s",
     duckduckgo  = "http://duckduckgo.com/?q=%s",
     wikipedia   = "http://en.wikipedia.org/wiki/Special:Search?search=%s",
@@ -78,7 +78,7 @@ domain_props = { --[[
         ["enable-plugins"] = true,
     },
     ["bbs.archlinux.org"] = {
-        ["user-stylesheet-uri"]     = "file://" .. luakit.data_dir .. "/styles/dark.css",
+        ["user-stylesheet-uri"]     = "file://" .. luapdf.data_dir .. "/styles/dark.css",
         ["enable-private-browsing"] = true,
     }, ]]
 }

@@ -1,5 +1,5 @@
 -------------------------------
--- luakit mode configuration --
+-- luapdf mode configuration --
 -------------------------------
 
 -- Table of modes and their callback hooks

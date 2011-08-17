@@ -1,5 +1,5 @@
 --------------------------
--- Default luakit theme --
+-- Default luapdf theme --
 --------------------------
 
 local theme = {}

@@ -32,7 +32,7 @@ void
 _fatal(gint line, const gchar *fct, const gchar *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    g_fprintf(stderr, "E: luakit: %s:%d: ", fct, line);
+    g_fprintf(stderr, "E: luapdf: %s:%d: ", fct, line);
     g_vfprintf(stderr, fmt, ap);
     va_end(ap);
     g_fprintf(stderr, "\n");
@@ -44,7 +44,7 @@ void
 _warn(gint line, const gchar *fct, const gchar *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    g_fprintf(stderr, "W: luakit: %s:%d: ", fct, line);
+    g_fprintf(stderr, "W: luapdf: %s:%d: ", fct, line);
     g_vfprintf(stderr, fmt, ap);
     va_end(ap);
     g_fprintf(stderr, "\n");
@@ -56,7 +56,7 @@ _debug(gint line, const gchar *fct, const gchar *fmt, ...) {
     if (globalconf.verbose) {
         va_list ap;
         va_start(ap, fmt);
-        g_fprintf(stderr, "D: luakit: %s:%d: ", fct, line);
+        g_fprintf(stderr, "D: luapdf: %s:%d: ", fct, line);
         g_vfprintf(stderr, fmt, ap);
         va_end(ap);
         g_fprintf(stderr, "\n");

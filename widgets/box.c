@@ -76,7 +76,7 @@ luaH_box_reorder_child(lua_State *L)
 }
 
 static gint
-luaH_box_index(lua_State *L, luakit_token_t token)
+luaH_box_index(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkwidget(L, 1);
 
@@ -100,7 +100,7 @@ luaH_box_index(lua_State *L, luakit_token_t token)
 }
 
 static gint
-luaH_box_newindex(lua_State *L, luakit_token_t token)
+luaH_box_newindex(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkwidget(L, 1);
 
@@ -122,7 +122,7 @@ luaH_box_newindex(lua_State *L, luakit_token_t token)
 }
 
 widget_t *
-widget_box(widget_t *w, luakit_token_t token)
+widget_box(widget_t *w, luapdf_token_t token)
 {
     w->index = luaH_box_index;
     w->newindex = luaH_box_newindex;

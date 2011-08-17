@@ -47,7 +47,7 @@ luaH_paned_pack(lua_State *L)
     }
 
     /* get packing position from C closure upvalue */
-    luakit_token_t t = (luakit_token_t)lua_tonumber(L, lua_upvalueindex(1));
+    luapdf_token_t t = (luapdf_token_t)lua_tonumber(L, lua_upvalueindex(1));
 
     if (t == L_TK_PACK1)
         gtk_paned_pack1(GTK_PANED(w->widget), GTK_WIDGET(child->widget),
@@ -76,7 +76,7 @@ luaH_paned_get_child(lua_State *L, widget_t *w, gint n)
 }
 
 static gint
-luaH_paned_index(lua_State *L, luakit_token_t token)
+luaH_paned_index(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkpaned(L, 1);
 
@@ -107,7 +107,7 @@ luaH_paned_index(lua_State *L, luakit_token_t token)
 }
 
 widget_t *
-widget_paned(widget_t *w, luakit_token_t token)
+widget_paned(widget_t *w, luapdf_token_t token)
 {
     w->index = luaH_paned_index;
     w->destructor = widget_destructor;

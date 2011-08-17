@@ -8,7 +8,7 @@ INSTALLDIR := $(DESTDIR)$(PREFIX)
 MANPREFIX  ?= $(PREFIX)/share/man
 MANPREFIX  := $(DESTDIR)$(MANPREFIX)
 
-DOCDIR     ?= $(PREFIX)/share/luakit/docs
+DOCDIR     ?= $(PREFIX)/share/luapdf/docs
 DOCDIR     := $(DESTDIR)$(DOCDIR)
 
 # Use the Just-In-Time compiler for lua (for faster lua code execution)
@@ -45,10 +45,10 @@ find the correct package name for your system. Please also check that you \
 have lua >= 5.1 installed)
 endif
 
-# Packages required to build luakit
+# Packages required to build luapdf
 PKGS := gtk+-2.0 gthread-2.0 webkit-1.0 sqlite3 $(LUA_PKG_NAME)
 
-# Build luakit with libunqiue bindings (for writing simple single-
+# Build luapdf with libunqiue bindings (for writing simple single-
 # instance applications using dbus).
 # To disable use `make USE_UNIQUE=0`.
 ifneq ($(USE_UNIQUE),0)
@@ -63,7 +63,7 @@ endif
 
 # Check user has the required libs installed.
 ifneq ($(shell pkg-config --print-errors --exists $(PKGS) && echo 1),1)
-$(error Cannot find required libraries to build luakit. Please check you \
+$(error Cannot find required libraries to build luapdf. Please check you \
 have the above packages installed and try again.)
 endif
 

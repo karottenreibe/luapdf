@@ -27,7 +27,7 @@
 #include "clib/sqlite3.h"
 #include "clib/timer.h"
 #include "clib/widget.h"
-#include "clib/luakit.h"
+#include "clib/luapdf.h"
 #include "clib/unique.h"
 
 #include <glib.h>
@@ -187,7 +187,7 @@ luaHe_ipairs(lua_State *L)
     return 3;
 }
 
-/* Enhanced type() function which recognize luakit objects.
+/* Enhanced type() function which recognize luapdf objects.
  * \param L The Lua VM state.
  * \return The number of arguments pushed on the stack.
  */
@@ -328,7 +328,7 @@ luaH_dofunction_on_error(lua_State *L)
     /* duplicate string error */
     lua_pushvalue(L, -1);
     /* emit error signal */
-    signal_object_emit(L, luakit_class.signals, "debug::error", 1, 0);
+    signal_object_emit(L, luapdf_class.signals, "debug::error", 1, 0);
 
     if(!luaL_dostring(L, "return debug.traceback(\"error while running function\", 3)"))
     {
@@ -363,8 +363,8 @@ luaH_init(void)
 
     luaH_object_setup(L);
 
-    /* Export luakit lib */
-    luakit_lib_setup(L);
+    /* Export luapdf lib */
+    luapdf_lib_setup(L);
 
     /* Export soup lib */
     soup_lib_setup(L);
@@ -404,7 +404,7 @@ luaH_init(void)
     GPtrArray *paths = g_ptr_array_new_with_free_func(g_free);
 
 #if DEVELOPMENT_PATHS
-    /* allows for testing luakit in the project directory */
+    /* allows for testing luapdf in the project directory */
     g_ptr_array_add(paths, g_strdup("./lib"));
     g_ptr_array_add(paths, g_strdup("./config"));
 #endif
@@ -415,9 +415,9 @@ luaH_init(void)
     /* add system config dirs (see: XDG_CONFIG_DIRS) */
     const gchar* const *config_dirs = g_get_system_config_dirs();
     for (; *config_dirs; config_dirs++)
-        g_ptr_array_add(paths, g_build_filename(*config_dirs, "luakit", NULL));
+        g_ptr_array_add(paths, g_build_filename(*config_dirs, "luapdf", NULL));
 
-    /* add luakit install path */
+    /* add luapdf install path */
     g_ptr_array_add(paths, g_build_filename(LUAKIT_INSTALL_PATH, "lib", NULL));
 
     const gchar *path;
@@ -484,7 +484,7 @@ luaH_parserc(const gchar *confpath, gboolean run)
     paths = g_ptr_array_new_with_free_func(g_free);
 
 #if DEVELOPMENT_PATHS
-    /* allows for testing luakit in the project directory */
+    /* allows for testing luapdf in the project directory */
     g_ptr_array_add(paths, g_strdup("./config/rc.lua"));
 #endif
 
@@ -494,7 +494,7 @@ luaH_parserc(const gchar *confpath, gboolean run)
     /* search system config dirs (see: XDG_CONFIG_DIRS) */
     config_dirs = g_get_system_config_dirs();
     for(; *config_dirs; config_dirs++)
-        g_ptr_array_add(paths, g_build_filename(*config_dirs, "luakit", "rc.lua", NULL));
+        g_ptr_array_add(paths, g_build_filename(*config_dirs, "luapdf", "rc.lua", NULL));
 
     const gchar *path;
     for (guint i = 0; i < paths->len; i++) {
@@ -518,14 +518,14 @@ bailout:
 gint
 luaH_class_index_miss_property(lua_State *L, lua_object_t* UNUSED(obj))
 {
-    signal_object_emit(L, luakit_class.signals, "debug::index::miss", 2, 0);
+    signal_object_emit(L, luapdf_class.signals, "debug::index::miss", 2, 0);
     return 0;
 }
 
 gint
 luaH_class_newindex_miss_property(lua_State *L, lua_object_t* UNUSED(obj))
 {
-    signal_object_emit(L, luakit_class.signals, "debug::newindex::miss", 3, 0);
+    signal_object_emit(L, luapdf_class.signals, "debug::newindex::miss", 3, 0);
     return 0;
 }
 

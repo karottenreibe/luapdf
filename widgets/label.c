@@ -98,7 +98,7 @@ luaH_label_set_padding(lua_State *L, widget_t *w)
 }
 
 static gint
-luaH_label_index(lua_State *L, luakit_token_t token)
+luaH_label_index(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkwidget(L, 1);
 
@@ -128,7 +128,7 @@ luaH_label_index(lua_State *L, luakit_token_t token)
 }
 
 static gint
-luaH_label_newindex(lua_State *L, luakit_token_t token)
+luaH_label_newindex(lua_State *L, luapdf_token_t token)
 {
     size_t len;
     widget_t *w = luaH_checkwidget(L, 1);
@@ -186,7 +186,7 @@ luaH_label_newindex(lua_State *L, luakit_token_t token)
 }
 
 widget_t *
-widget_label(widget_t *w, luakit_token_t UNUSED(token))
+widget_label(widget_t *w, luapdf_token_t UNUSED(token))
 {
     w->index = luaH_label_index;
     w->newindex = luaH_label_newindex;

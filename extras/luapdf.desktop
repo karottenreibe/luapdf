@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Luapdf
+Comment=Fast, small, poppler based micro-pdf-viewer extensible by Lua
+Exec=luapdf %u
+Icon=luapdf
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Graphics;VectorGraphics;Viewer;
+MimeType=application/pdf;application/x-bzpdf;application/x-gzpdf;application/x-xzpdf;application/postscript;application/x-bzpostscript;application/x-gzpostscript;image/x-eps;image/x-bzeps;image/x-gzeps;application/x-dvi;application/x-bzdvi;application/x-gzdvi;image/vnd.djvu;image/tiff;application/x-cbr;application/x-cbz;application/x-cb7;application/x-cbt;

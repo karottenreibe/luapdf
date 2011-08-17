@@ -40,7 +40,7 @@ plug_removed_cb(GtkSocket* UNUSED(socket), widget_t *w)
 }
 
 static gint
-luaH_socket_index(lua_State *L, luakit_token_t token)
+luaH_socket_index(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkwidget(L, 1);
 
@@ -60,7 +60,7 @@ luaH_socket_index(lua_State *L, luakit_token_t token)
 }
 
 static gint
-luaH_socket_newindex(lua_State *L, luakit_token_t token)
+luaH_socket_newindex(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkwidget(L, 1);
     if (token == L_TK_ID) {
@@ -71,7 +71,7 @@ luaH_socket_newindex(lua_State *L, luakit_token_t token)
 }
 
 widget_t *
-widget_socket(widget_t *w, luakit_token_t UNUSED(token))
+widget_socket(widget_t *w, luapdf_token_t UNUSED(token))
 {
     w->index = luaH_socket_index;
     w->newindex = luaH_socket_newindex;

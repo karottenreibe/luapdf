@@ -21,42 +21,42 @@
 #ifndef LUAKIT_GLOBALCONF
 #define LUAKIT_GLOBALCONF
 
-/** Install location of luakit shared files. This serves as the base path for
+/** Install location of luapdf shared files. This serves as the base path for
  * all system Lua module loading paths. */
-#define LUAKIT_INSTALL_PATH "/usr/local/share/luakit"
+#define LUAKIT_INSTALL_PATH "/usr/local/share/luapdf"
 
 /** Registry key for the Lua registry API to store a private reference counting
  * table. This table prevents garbage collection of objects (userdata or
  * tables) while in use by C functions or objects.
  * \see http://www.lua.org/manual/5.1/manual.html#3.5 */
-#define LUAKIT_OBJECT_REGISTRY_KEY "luakit.object.registry"
+#define LUAKIT_OBJECT_REGISTRY_KEY "luapdf.object.registry"
 
 #include <glib/gtypes.h>
 #include <lua.h>
 #include "common/signal.h"
 
-/** Global luakit state struct. */
+/** Global luapdf state struct. */
 typedef struct {
     /** Main Lua VM state.
      * \see http://www.lua.org/manual/5.1/manual.html#lua_State */
     lua_State *L;
 
-    /** User path $XDG_CONFIG_DIR/luakit/ (defaults to ~/.config/luakit/) where
+    /** User path $XDG_CONFIG_DIR/luapdf/ (defaults to ~/.config/luapdf/) where
      * configuration files should be stored.
      * \see http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html */
     gchar *config_dir;
-    /** User path $XDG_DATA_DIR/luakit/ (defaults to ~/.local/share/luakit/)
+    /** User path $XDG_DATA_DIR/luapdf/ (defaults to ~/.local/share/luapdf/)
      * where data files should be stored.
      * \see http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html */
     gchar *data_dir;
-    /** User path $XDG_CACHE_DIR/luakit/ (defaults to ~/.cache/luakit/) where
+    /** User path $XDG_CACHE_DIR/luapdf/ (defaults to ~/.cache/luapdf/) where
      * non-essential data files should be stored.
      * \see http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html */
     gchar *cache_dir;
 
     /** Path to the currently loaded config file. */
     gchar *confpath;
-    /** The luakit executable path. */
+    /** The luapdf executable path. */
     gchar *execpath;
     /** Print verbose output. */
     gboolean verbose;

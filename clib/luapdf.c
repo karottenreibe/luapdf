@@ -1,5 +1,5 @@
 /*
- * clib/luakit.c - Generic functions for Lua scripts
+ * clib/luapdf.c - Generic functions for Lua scripts
  *
  * Copyright © 2011 Mason Larobina <mason.larobina@gmail.com>
  *
@@ -20,7 +20,7 @@
 
 #include "common/signal.h"
 #include "clib/widget.h"
-#include "clib/luakit.h"
+#include "clib/luapdf.h"
 #include "luah.h"
 
 #include <stdlib.h>
@@ -30,8 +30,8 @@
 #include <time.h>
 #include <webkit/webkit.h>
 
-/* setup luakit module signals */
-LUA_CLASS_FUNCS(luakit, luakit_class)
+/* setup luapdf module signals */
+LUA_CLASS_FUNCS(luapdf, luapdf_class)
 
 GtkClipboard*
 luaH_clipboard_get(lua_State *L, gint idx)
@@ -48,7 +48,7 @@ luaH_clipboard_get(lua_State *L, gint idx)
 #undef CB_CASE
 }
 
-/** __index metamethod for the luakit.selection table which
+/** __index metamethod for the luapdf.selection table which
  * returns text from an X selection.
  * \see http://en.wikipedia.org/wiki/X_Window_selection
  * \see http://developer.gnome.org/gtk/stable/gtk-Clipboards.html#gtk-clipboard-wait-for-text
@@ -57,7 +57,7 @@ luaH_clipboard_get(lua_State *L, gint idx)
  * \return   The number of elements pushed on stack.
  */
 static gint
-luaH_luakit_selection_index(lua_State *L)
+luaH_luapdf_selection_index(lua_State *L)
 {
     GtkClipboard *selection = luaH_clipboard_get(L, 2);
     if (selection) {
@@ -71,7 +71,7 @@ luaH_luakit_selection_index(lua_State *L)
     return 0;
 }
 
-/** __newindex metamethod for the luakit.selection table which
+/** __newindex metamethod for the luapdf.selection table which
  * sets an X selection.
  * \see http://en.wikipedia.org/wiki/X_Window_selection
  * \see http://developer.gnome.org/gtk/stable/gtk-Clipboards.html#gtk-clipboard-set-text
@@ -80,15 +80,15 @@ luaH_luakit_selection_index(lua_State *L)
  * \return   The number of elements pushed on stack (0).
  *
  * \lcode
- * luakit.selection.primary = "Malcolm Reynolds"
- * luakit.selection.clipboard = "John Crichton"
- * print(luakit.selection.primary) // outputs "Malcolm Reynolds"
- * luakit.selection.primary = nil  // clears the primary selection
- * print(luakit.selection.primary) // outputs nothing
+ * luapdf.selection.primary = "Malcolm Reynolds"
+ * luapdf.selection.clipboard = "John Crichton"
+ * print(luapdf.selection.primary) // outputs "Malcolm Reynolds"
+ * luapdf.selection.primary = nil  // clears the primary selection
+ * print(luapdf.selection.primary) // outputs nothing
  * \endcode
  */
 static gint
-luaH_luakit_selection_newindex(lua_State *L)
+luaH_luapdf_selection_newindex(lua_State *L)
 {
     GtkClipboard *selection = luaH_clipboard_get(L, 2);
     if (selection) {
@@ -102,17 +102,17 @@ luaH_luakit_selection_newindex(lua_State *L)
 }
 
 static gint
-luaH_luakit_selection_table_push(lua_State *L)
+luaH_luapdf_selection_table_push(lua_State *L)
 {
     /* create selection table */
     lua_newtable(L);
     /* setup metatable */
     lua_createtable(L, 0, 2);
     lua_pushliteral(L, "__index");
-    lua_pushcfunction(L, luaH_luakit_selection_index);
+    lua_pushcfunction(L, luaH_luapdf_selection_index);
     lua_rawset(L, -3);
     lua_pushliteral(L, "__newindex");
-    lua_pushcfunction(L, luaH_luakit_selection_newindex);
+    lua_pushcfunction(L, luaH_luapdf_selection_newindex);
     lua_rawset(L, -3);
     lua_setmetatable(L, -2);
     return 1;
@@ -131,7 +131,7 @@ luaH_luakit_selection_table_push(lua_State *L)
  * \lreturn        The escaped string.
  */
 static gint
-luaH_luakit_uri_encode(lua_State *L)
+luaH_luapdf_uri_encode(lua_State *L)
 {
     const gchar *string = luaL_checkstring(L, 1);
     const gchar *allowed = NULL;
@@ -159,7 +159,7 @@ luaH_luakit_uri_encode(lua_State *L)
  * \lreturn        The unescaped string or \c nil if illegal chars found.
  */
 static gint
-luaH_luakit_uri_decode(lua_State *L)
+luaH_luapdf_uri_decode(lua_State *L)
 {
     const gchar *string = luaL_checkstring(L, 1);
     const gchar *illegal = NULL;
@@ -192,7 +192,7 @@ luaH_luakit_uri_decode(lua_State *L)
  *                        dialog was cancelled.
  */
 static gint
-luaH_luakit_save_file(lua_State *L)
+luaH_luapdf_save_file(lua_State *L)
 {
     const gchar *title = luaL_checkstring(L, 1);
 
@@ -246,10 +246,10 @@ luaH_luakit_save_file(lua_State *L)
  * \lreturn         Returns the full path of the given special directory.
  */
 static gint
-luaH_luakit_get_special_dir(lua_State *L)
+luaH_luapdf_get_special_dir(lua_State *L)
 {
     const gchar *name = luaL_checkstring(L, 1);
-    luakit_token_t token = l_tokenize(name);
+    luapdf_token_t token = l_tokenize(name);
     GUserDirectory atom;
     /* match token with G_USER_DIR_* atom */
     switch(token) {
@@ -287,7 +287,7 @@ luaH_luakit_get_special_dir(lua_State *L)
  * \lreturn The childs stderr.
  */
 static gint
-luaH_luakit_spawn_sync(lua_State *L)
+luaH_luapdf_spawn_sync(lua_State *L)
 {
     GError *e = NULL;
     gchar *_stdout = NULL;
@@ -392,11 +392,11 @@ void async_callback_handler(GPid pid, gint status, gpointer cb_ref)
  *     end
  * end
  *
- * luakit.spawn(string.format("%s %q", editor, filename), editor_callback)
+ * luapdf.spawn(string.format("%s %q", editor, filename), editor_callback)
  * \endcode
  */
 static gint
-luaH_luakit_spawn(lua_State *L)
+luaH_luapdf_spawn(lua_State *L)
 {
     GError *e = NULL;
     GPid pid = 0;
@@ -448,7 +448,7 @@ spawn_error:
  * \return  The number of elements pushed on the stack (1).
  */
 static gint
-luaH_luakit_time(lua_State *L)
+luaH_luapdf_time(lua_State *L)
 {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
@@ -465,7 +465,7 @@ luaH_luakit_time(lua_State *L)
  * \return  The number of elements pushed on the stack (0).
  */
 static gint
-luaH_luakit_exec(lua_State *L)
+luaH_luapdf_exec(lua_State *L)
 {
     static const gchar *shell = NULL;
     if (!shell && !(shell = g_getenv("SHELL")))
@@ -474,20 +474,20 @@ luaH_luakit_exec(lua_State *L)
     return 0;
 }
 
-/** luakit module index metamethod.
+/** luapdf module index metamethod.
  *
  * \param  L The Lua VM state.
  * \return   The number of elements pushed on stack.
  */
 static gint
-luaH_luakit_index(lua_State *L)
+luaH_luapdf_index(lua_State *L)
 {
     if(luaH_usemetatable(L, 1, 2))
         return 1;
 
     widget_t *w;
     const gchar *prop = luaL_checkstring(L, 2);
-    luakit_token_t token = l_tokenize(prop);
+    luapdf_token_t token = l_tokenize(prop);
 
     switch(token) {
 
@@ -517,7 +517,7 @@ luaH_luakit_index(lua_State *L)
         return 1;
 
       case L_TK_SELECTION:
-        return luaH_luakit_selection_table_push(L);
+        return luaH_luapdf_selection_table_push(L);
 
       case L_TK_INSTALL_PATH:
         lua_pushliteral(L, LUAKIT_INSTALL_PATH);
@@ -548,7 +548,7 @@ luaH_luakit_index(lua_State *L)
  * \return   The number of elements pushed on stack.
  */
 static gint
-luaH_luakit_quit(lua_State* UNUSED(L))
+luaH_luapdf_quit(lua_State* UNUSED(L))
 {
     if (gtk_main_level())
         gtk_main_quit();
@@ -560,7 +560,7 @@ luaH_luakit_quit(lua_State* UNUSED(L))
 /** Calls the idle callback function. If the callback function returns false the
  * idle source is removed, the Lua function is unreffed and will not be called
  * again.
- * \see luaH_luakit_idle_add
+ * \see luaH_luapdf_idle_add
  *
  * \param func Lua callback function.
  * \return TRUE to keep source alive, FALSE to remove.
@@ -606,7 +606,7 @@ idle_cb(gpointer func)
  * \lparam func The callback function.
  */
 static gint
-luaH_luakit_idle_add(lua_State *L)
+luaH_luapdf_idle_add(lua_State *L)
 {
     luaH_checkfunction(L, 1);
     gpointer func = luaH_object_ref(L, 1);
@@ -625,7 +625,7 @@ luaH_luakit_idle_add(lua_State *L)
  * \lreturn true if callback removed.
  */
 static gint
-luaH_luakit_idle_remove(lua_State *L)
+luaH_luapdf_idle_remove(lua_State *L)
 {
     luaH_checkfunction(L, 1);
     gpointer func = (gpointer)lua_topointer(L, 1);
@@ -634,36 +634,36 @@ luaH_luakit_idle_remove(lua_State *L)
     return 1;
 }
 
-/** Setup luakit module.
+/** Setup luapdf module.
  *
  * \param L The Lua VM state.
  */
 void
-luakit_lib_setup(lua_State *L)
+luapdf_lib_setup(lua_State *L)
 {
-    static const struct luaL_reg luakit_lib[] =
+    static const struct luaL_reg luapdf_lib[] =
     {
-        LUA_CLASS_METHODS(luakit)
-        { "__index",         luaH_luakit_index },
-        { "exec",            luaH_luakit_exec },
-        { "get_special_dir", luaH_luakit_get_special_dir },
-        { "quit",            luaH_luakit_quit },
-        { "save_file",       luaH_luakit_save_file },
-        { "spawn",           luaH_luakit_spawn },
-        { "spawn_sync",      luaH_luakit_spawn_sync },
-        { "time",            luaH_luakit_time },
-        { "uri_decode",      luaH_luakit_uri_decode },
-        { "uri_encode",      luaH_luakit_uri_encode },
-        { "idle_add",        luaH_luakit_idle_add },
-        { "idle_remove",     luaH_luakit_idle_remove },
+        LUA_CLASS_METHODS(luapdf)
+        { "__index",         luaH_luapdf_index },
+        { "exec",            luaH_luapdf_exec },
+        { "get_special_dir", luaH_luapdf_get_special_dir },
+        { "quit",            luaH_luapdf_quit },
+        { "save_file",       luaH_luapdf_save_file },
+        { "spawn",           luaH_luapdf_spawn },
+        { "spawn_sync",      luaH_luapdf_spawn_sync },
+        { "time",            luaH_luapdf_time },
+        { "uri_decode",      luaH_luapdf_uri_decode },
+        { "uri_encode",      luaH_luapdf_uri_encode },
+        { "idle_add",        luaH_luapdf_idle_add },
+        { "idle_remove",     luaH_luapdf_idle_remove },
         { NULL,              NULL }
     };
 
     /* create signals array */
-    luakit_class.signals = signal_new();
+    luapdf_class.signals = signal_new();
 
-    /* export luakit lib */
-    luaH_openlib(L, "luakit", luakit_lib, luakit_lib);
+    /* export luapdf lib */
+    luaH_openlib(L, "luapdf", luapdf_lib, luapdf_lib);
 }
 
 // vim: ft=c:et:sw=4:ts=8:sts=4:tw=80

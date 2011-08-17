@@ -159,7 +159,7 @@ luaH_notebook_reorder(lua_State *L)
 }
 
 static gint
-luaH_notebook_index(lua_State *L, luakit_token_t token)
+luaH_notebook_index(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkwidget(L, 1);
 
@@ -196,7 +196,7 @@ luaH_notebook_index(lua_State *L, luakit_token_t token)
 }
 
 static gint
-luaH_notebook_newindex(lua_State *L, luakit_token_t token)
+luaH_notebook_newindex(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkwidget(L, 1);
 
@@ -269,7 +269,7 @@ reorder_cb(GtkNotebook* UNUSED(n), GtkWidget *widget, guint i, widget_t *w)
 }
 
 widget_t *
-widget_notebook(widget_t *w, luakit_token_t UNUSED(token))
+widget_notebook(widget_t *w, luapdf_token_t UNUSED(token))
 {
     w->index = luaH_notebook_index;
     w->newindex = luaH_notebook_newindex;

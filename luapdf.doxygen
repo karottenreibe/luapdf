@@ -1,10 +1,10 @@
 #---------------------------------------------------------------------------
-# luakit doxygen config (from AwesomeWM project)
+# luapdf doxygen config (from AwesomeWM project)
 # (C) 2011 Mason Larobina <mason.larobina@gmail.com>
 # (C) 2007-2010 Julien Danjou <julien@danjou.info>
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = luakit
+PROJECT_NAME           = luapdf
 PROJECT_NUMBER         = devel
 OUTPUT_DIRECTORY       = doc
 CREATE_SUBDIRS         = NO

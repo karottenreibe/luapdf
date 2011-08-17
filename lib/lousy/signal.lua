@@ -1,5 +1,5 @@
 --------------------------------------------------------------
--- Mimic the luakit signal api functions for tables         --
+-- Mimic the luapdf signal api functions for tables         --
 -- @author Fabian Streitel &lt;karottenreibe@gmail.com&gt;  --
 -- @author Mason Larobina  &lt;mason.larobina@gmail.com&gt; --
 -- @copyright 2010 Fabian Streitel, Mason Larobina          --
@@ -15,7 +15,7 @@ local table = table
 local tostring = tostring
 local type = type
 local unpack = unpack
-local verbose = luakit.verbose
+local verbose = luapdf.verbose
 
 --- Provides a signal API similar to GTK's signals.
 module("lousy.signal")

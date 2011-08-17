@@ -3,7 +3,7 @@
 *~
 *.1
 apidocs
-luakit
+luapdf
 common/tokenize.h
 common/tokenize.c
 globalconf.h

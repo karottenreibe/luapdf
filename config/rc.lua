@@ -1,10 +1,10 @@
 -----------------------------------------------------------------------
--- luakit configuration file, more information at http://luakit.org/ --
+-- luapdf configuration file, more information at http://luapdf.org/ --
 -----------------------------------------------------------------------
 
 if unique then
-    unique.new("org.luakit")
-    -- Check for a running luakit instance
+    unique.new("org.luapdf")
+    -- Check for a running luapdf instance
     if unique.is_running() then
         if uris[1] then
             for _, uri in ipairs(uris) do
@@ -13,40 +13,40 @@ if unique then
         else
             unique.send_message("winopen")
         end
-        luakit.quit()
+        luapdf.quit()
     end
 end
 
--- Load library of useful functions for luakit
+-- Load library of useful functions for luapdf
 require "lousy"
 
--- Small util functions to print output (info prints only when luakit.verbose is true)
+-- Small util functions to print output (info prints only when luapdf.verbose is true)
 function warn(...) io.stderr:write(string.format(...) .. "\n") end
-function info(...) if luakit.verbose then io.stderr:write(string.format(...) .. "\n") end end
+function info(...) if luapdf.verbose then io.stderr:write(string.format(...) .. "\n") end end
 
 -- Load users global config
--- ("$XDG_CONFIG_HOME/luakit/globals.lua" or "/etc/xdg/luakit/globals.lua")
+-- ("$XDG_CONFIG_HOME/luapdf/globals.lua" or "/etc/xdg/luapdf/globals.lua")
 require "globals"
 
 -- Load users theme
--- ("$XDG_CONFIG_HOME/luakit/theme.lua" or "/etc/xdg/luakit/theme.lua")
+-- ("$XDG_CONFIG_HOME/luapdf/theme.lua" or "/etc/xdg/luapdf/theme.lua")
 lousy.theme.init(lousy.util.find_config("theme.lua"))
 theme = assert(lousy.theme.get(), "failed to load theme")
 
 -- Load users window class
--- ("$XDG_CONFIG_HOME/luakit/window.lua" or "/etc/xdg/luakit/window.lua")
+-- ("$XDG_CONFIG_HOME/luapdf/window.lua" or "/etc/xdg/luapdf/window.lua")
 require "window"
 
 -- Load users webview class
--- ("$XDG_CONFIG_HOME/luakit/webview.lua" or "/etc/xdg/luakit/webview.lua")
+-- ("$XDG_CONFIG_HOME/luapdf/webview.lua" or "/etc/xdg/luapdf/webview.lua")
 require "webview"
 
 -- Load users mode configuration
--- ("$XDG_CONFIG_HOME/luakit/modes.lua" or "/etc/xdg/luakit/modes.lua")
+-- ("$XDG_CONFIG_HOME/luapdf/modes.lua" or "/etc/xdg/luapdf/modes.lua")
 require "modes"
 
 -- Load users keybindings
--- ("$XDG_CONFIG_HOME/luakit/binds.lua" or "/etc/xdg/luakit/binds.lua")
+-- ("$XDG_CONFIG_HOME/luapdf/binds.lua" or "/etc/xdg/luapdf/binds.lua")
 require "binds"
 
 ----------------------------------
@@ -57,8 +57,8 @@ require "binds"
 require "cookies"
 
 -- Cookie blocking by domain (extends cookies module)
--- Add domains to the whitelist at "$XDG_CONFIG_HOME/luakit/cookie.whitelist"
--- and blacklist at "$XDG_CONFIG_HOME/luakit/cookie.blacklist".
+-- Add domains to the whitelist at "$XDG_CONFIG_HOME/luapdf/cookie.whitelist"
+-- and blacklist at "$XDG_CONFIG_HOME/luapdf/cookie.blacklist".
 -- Each domain must be on it's own line and you may use "*" as a
 -- wildcard character (I.e. "*google.com")
 --require "cookie_blocking"
@@ -146,7 +146,7 @@ else
 end
 
 -------------------------------------------
--- Open URIs from other luakit instances --
+-- Open URIs from other luapdf instances --
 -------------------------------------------
 
 if unique then

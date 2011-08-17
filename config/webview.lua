@@ -162,7 +162,7 @@ webview.init_funcs = {
             -- Strip leading www.
             domain = string.match(domain or "", "^www%.(.+)") or domain or "all"
             -- Build list of domain props tables to join & load.
-            -- I.e. for luakit.org load .luakit.org, luakit.org, .org
+            -- I.e. for luapdf.org load .luapdf.org, luapdf.org, .org
             local props = {domain_props.all or {}, domain_props[domain] or {}}
             repeat
                 table.insert(props, 2, domain_props["."..domain] or {})

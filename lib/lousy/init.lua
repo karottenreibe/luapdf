@@ -11,7 +11,7 @@ require("lousy.signal")
 require("lousy.widget")
 require("lousy.uri")
 
---- Useful functions for luakit.
+--- Useful functions for luapdf.
 module("lousy")
 
 -- vim: et:sw=4:ts=8:sts=4:tw=80

@@ -24,12 +24,12 @@ tokenize_h = [[
 
 #include <glib/gtypes.h>
 
-typedef enum luakit_token_t {
-    L_TK_UNKNOWN=0, /* (luakit_token_t) NULL == L_TK_UNKNOWN */
+typedef enum luapdf_token_t {
+    L_TK_UNKNOWN=0, /* (luapdf_token_t) NULL == L_TK_UNKNOWN */
     %s
-} luakit_token_t;
+} luapdf_token_t;
 
-__attribute__((pure)) enum luakit_token_t l_tokenize(const gchar *s);
+__attribute__((pure)) enum luapdf_token_t l_tokenize(const gchar *s);
 
 #endif
 ]]
@@ -43,7 +43,7 @@ tokenize_c = [[
 static GHashTable *tokens = NULL;
 
 typedef struct {
-    luakit_token_t tok;
+    luapdf_token_t tok;
     const gchar *name;
 } token_map_t;
 
@@ -52,7 +52,7 @@ token_map_t tokens_table[] = {
     { 0, NULL },
 };
 
-luakit_token_t l_tokenize(const gchar *s)
+luapdf_token_t l_tokenize(const gchar *s)
 {
     if (!tokens) {
         tokens = g_hash_table_new(g_str_hash, g_str_equal);
@@ -60,7 +60,7 @@ luakit_token_t l_tokenize(const gchar *s)
             g_hash_table_insert(tokens, (gpointer) t->name, (gpointer) t->tok);
     }
 
-    return (luakit_token_t) g_hash_table_lookup(tokens, s);
+    return (luapdf_token_t) g_hash_table_lookup(tokens, s);
 }
 ]]
 

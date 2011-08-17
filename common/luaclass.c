@@ -114,7 +114,7 @@ luaH_openlib(lua_State *L, const gchar *name, const struct luaL_reg methods[],
 }
 
 void
-luaH_class_add_property(lua_class_t *lua_class, luakit_token_t token,
+luaH_class_add_property(lua_class_t *lua_class, luapdf_token_t token,
         lua_class_propfunc_t cb_new,
         lua_class_propfunc_t cb_index,
         lua_class_propfunc_t cb_newindex) {
@@ -225,7 +225,7 @@ luaH_usemetatable(lua_State *L, gint idxobj, gint idxfield) {
 static lua_class_property_t *
 luaH_class_property_get(lua_State *L, lua_class_t *lua_class, gint fieldidx) {
     const gchar *attr = luaL_checkstring(L, fieldidx);
-    luakit_token_t token = l_tokenize(attr);
+    luapdf_token_t token = l_tokenize(attr);
 
     return g_hash_table_lookup((GHashTable*) lua_class->properties,
             (gpointer) token);

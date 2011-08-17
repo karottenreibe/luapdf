@@ -21,7 +21,7 @@ local type = type
 local tonumber = tonumber
 local tostring = tostring
 local math = require "math"
-local capi = { luakit = luakit }
+local capi = { luapdf = luapdf }
 
 --- Utility functions for lousy.
 module("lousy.util")
@@ -258,36 +258,36 @@ local function find_file(paths)
 end
 
 --- Search and return the filepath of a file in the current working directory,
--- or $XDG_CONFIG_HOME/luakit/ or /etc/xdg/luakit/.
+-- or $XDG_CONFIG_HOME/luapdf/ or /etc/xdg/luapdf/.
 -- @param f The relative filepath.
 -- @return The first valid filepath or an error.
 function find_config(f)
     if rstring.match(f, "^/") then return f end
     -- Search locations
-    local paths = { "config/"..f, capi.luakit.config_dir.."/"..f, "/etc/xdg/luakit/"..f }
+    local paths = { "config/"..f, capi.luapdf.config_dir.."/"..f, "/etc/xdg/luapdf/"..f }
     return find_file(paths)
 end
 
 --- Search and return the filepath of a file in the current working directory,
--- in the users $XDG_DATA_HOME/luakit/ or the luakit install dir.
+-- in the users $XDG_DATA_HOME/luapdf/ or the luapdf install dir.
 -- @param f The relative filepath.
 -- @return The first valid filepath or an error.
 function find_data(f)
     if rstring.match(f, "^/") then return f end
     -- Search locations
-    local paths = { f, capi.luakit.data_dir.."/"..f, capi.luakit.install_path.."/"..f }
+    local paths = { f, capi.luapdf.data_dir.."/"..f, capi.luapdf.install_path.."/"..f }
     return find_file(paths)
 end
 
 --- Search and return the filepath of a file in the current working directory
--- or in the users $XDG_CACHE_HOME/luakit/
+-- or in the users $XDG_CACHE_HOME/luapdf/
 -- @param f The relative filepath.
 -- @return The first valid filepath or an error.
 function find_cache(f)
     -- Ignore absolute paths
     if rstring.match(f, "^/") then return f end
     -- Search locations
-    local paths = { capi.luakit.cache_dir.."/"..f }
+    local paths = { capi.luapdf.cache_dir.."/"..f }
     return find_file(paths)
 end
 

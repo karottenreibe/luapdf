@@ -104,7 +104,7 @@ luaH_window_unmaximize(lua_State *L)
 }
 
 static gint
-luaH_window_index(lua_State *L, luakit_token_t token)
+luaH_window_index(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkwidget(L, 1);
 
@@ -144,7 +144,7 @@ luaH_window_index(lua_State *L, luakit_token_t token)
 }
 
 static gint
-luaH_window_newindex(lua_State *L, luakit_token_t token)
+luaH_window_newindex(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkwidget(L, 1);
 
@@ -175,7 +175,7 @@ luaH_window_newindex(lua_State *L, luakit_token_t token)
 }
 
 widget_t *
-widget_window(widget_t *w, luakit_token_t UNUSED(token))
+widget_window(widget_t *w, luapdf_token_t UNUSED(token))
 {
     w->index = luaH_window_index;
     w->newindex = luaH_window_newindex;
@@ -184,9 +184,9 @@ widget_window(widget_t *w, luakit_token_t UNUSED(token))
     /* create and setup window widget */
     w->widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_object_set_data(G_OBJECT(w->widget), "lua_widget", (gpointer) w);
-    gtk_window_set_wmclass(GTK_WINDOW(w->widget), "luakit", "luakit");
+    gtk_window_set_wmclass(GTK_WINDOW(w->widget), "luapdf", "luapdf");
     gtk_window_set_default_size(GTK_WINDOW(w->widget), 800, 600);
-    gtk_window_set_title(GTK_WINDOW(w->widget), "luakit");
+    gtk_window_set_title(GTK_WINDOW(w->widget), "luapdf");
     GdkGeometry hints;
     hints.min_width = 1;
     hints.min_height = 1;

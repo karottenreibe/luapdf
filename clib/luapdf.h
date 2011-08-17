@@ -1,5 +1,5 @@
 /*
- * clib/luakit.h - Generic functions for Lua scripts
+ * clib/luapdf.h - Generic functions for Lua scripts
  *
  * Copyright © 2011 Mason Larobina <mason.larobina@gmail.com>
  *
@@ -21,10 +21,10 @@
 #ifndef LUAKIT_CLIB_LUAKIT_H
 #define LUAKIT_CLIB_LUAKIT_H
 
-/* lua luakit class for signals */
-lua_class_t luakit_class;
+/* lua luapdf class for signals */
+lua_class_t luapdf_class;
 
-void luakit_lib_setup(lua_State *L);
+void luapdf_lib_setup(lua_State *L);
 
 #endif
 

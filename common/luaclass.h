@@ -75,7 +75,7 @@ void luaH_class_setup(lua_State *, lua_class_t *, const gchar *,
         lua_class_allocator_t, lua_class_propfunc_t, lua_class_propfunc_t,
         const struct luaL_reg[], const struct luaL_reg[]);
 
-void luaH_class_add_property(lua_class_t *, luakit_token_t token,
+void luaH_class_add_property(lua_class_t *, luapdf_token_t token,
         lua_class_propfunc_t, lua_class_propfunc_t, lua_class_propfunc_t);
 
 gint luaH_usemetatable(lua_State *,  gint, gint);

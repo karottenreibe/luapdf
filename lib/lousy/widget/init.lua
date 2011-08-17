@@ -6,5 +6,5 @@
 require "lousy.widget.tablist"
 require "lousy.widget.menu"
 
---- Widget module for luakit
+--- Widget module for luapdf
 module "lousy.widget"

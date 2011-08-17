@@ -22,7 +22,7 @@
 #include "widgets/common.h"
 
 static gint
-luaH_eventbox_index(lua_State *L, luakit_token_t token)
+luaH_eventbox_index(lua_State *L, luapdf_token_t token)
 {
     widget_t *w = luaH_checkwidget(L, 1);
 
@@ -42,7 +42,7 @@ luaH_eventbox_index(lua_State *L, luakit_token_t token)
 }
 
 static gint
-luaH_eventbox_newindex(lua_State *L, luakit_token_t token)
+luaH_eventbox_newindex(lua_State *L, luapdf_token_t token)
 {
     size_t len;
     widget_t *w = luaH_checkwidget(L, 1);
@@ -69,7 +69,7 @@ luaH_eventbox_newindex(lua_State *L, luakit_token_t token)
 }
 
 widget_t *
-widget_eventbox(widget_t *w, luakit_token_t UNUSED(token))
+widget_eventbox(widget_t *w, luapdf_token_t UNUSED(token))
 {
     w->index = luaH_eventbox_index;
     w->newindex = luaH_eventbox_newindex;

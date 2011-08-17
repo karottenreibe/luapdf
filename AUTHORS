@@ -1,7 +1,7 @@
-Author of luakit:
+Author of luapdf:
   Mason Larobina    (mason-l)   <mason.larobina@gmail.com>  2010-2011
 
-Contributors to luakit (A to Z):
+Contributors to luapdf (A to Z):
   Alexis Daboville              <alexis.daboville@gmail.com> 2011
   André Aparício                <aparicio99@gmail.com>      2011
   Chris van Dijk    (quigybo)   <quigybo@hotmail.com>       2010
@@ -50,7 +50,7 @@ Inherited authors from the surf project:
   Enno Boland       (tox)       <tox@s01.de>                2009-2010
 
 For volumetric graphs on specific contributers "impact" checkout:
-  https://github.com/mason-larobina/luakit/graphs/impact
+  https://github.com/mason-larobina/luapdf/graphs/impact
 
 If you believe you should be in this file or notice that I have missed an
 attribution to somebody else please contact me (Mason) or email me a patch

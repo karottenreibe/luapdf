@@ -151,7 +151,7 @@ window.init_funcs = {
     last_win_check = function (w)
         w.win:add_signal("destroy", function ()
             -- call the quit function if this was the last window left
-            if #luakit.windows == 0 then luakit.quit() end
+            if #luapdf.windows == 0 then luapdf.quit() end
             if w.close_win then w:close_win() end
         end)
     end,
@@ -229,8 +229,8 @@ window.init_funcs = {
     end,
 
     set_window_icon = function (w)
-        local path = (luakit.dev_paths and os.exists("./extras/luakit.png")) or
-            os.exists("/usr/share/pixmaps/luakit.png")
+        local path = (luapdf.dev_paths and os.exists("./extras/luapdf.png")) or
+            os.exists("/usr/share/pixmaps/luapdf.png")
         if path then w.win.icon = path end
     end,
 }
@@ -441,7 +441,7 @@ window.methods = {
     update_win_title = function (w, view)
         if not view then view = w:get_current() end
         local uri, title = view.uri, view:get_property("title")
-        title = (title or "luakit") .. ((uri and " - " .. uri) or "")
+        title = (title or "luapdf") .. ((uri and " - " .. uri) or "")
         local max = globals.max_title_len or 80
         if #title > max then title = string.sub(title, 1, max) .. "..." end
         w.win.title = title
@@ -622,11 +622,11 @@ window.methods = {
 
     close_win = function (w, force)
         -- Ask plugins if it's OK to close last window
-        if not force and (#luakit.windows == 1) then
-            local emsg = luakit.emit_signal("can-close", w)
+        if not force and (#luapdf.windows == 1) then
+            local emsg = luapdf.emit_signal("can-close", w)
             if emsg then
                 assert(type(emsg) == "string", "invalid exit error message")
-                w:error(string.format("Can't close luakit: %s (force close "
+                w:error(string.format("Can't close luapdf: %s (force close "
                     .. "with :q! or :wq!)", emsg))
                 return false
             end
@@ -660,7 +660,7 @@ window.methods = {
         for k, _ in pairs(w) do w[k] = nil end
 
         -- Quit if closed last window
-        if #luakit.windows == 0 then luakit.quit() end
+        if #luapdf.windows == 0 then luapdf.quit() end
     end,
 
     -- Navigate current view or open new tab
@@ -669,7 +669,7 @@ window.methods = {
         if view then
             local js = string.match(uri, "^javascript:(.+)$")
             if js then
-                return view:eval_js(luakit.uri_decode(js), "(javascript-uri)")
+                return view:eval_js(luapdf.uri_decode(js), "(javascript-uri)")
             end
             view.uri = uri
         else
@@ -677,24 +677,24 @@ window.methods = {
         end
     end,
 
-    -- Save, restart luakit and reload session.
+    -- Save, restart luapdf and reload session.
     restart = function (w)
-        -- Generate luakit launch command.
-        local args = {({string.gsub(luakit.execpath, " ", "\\ ")})[1]}
-        if luakit.verbose then table.insert(args, "-v") end
+        -- Generate luapdf launch command.
+        local args = {({string.gsub(luapdf.execpath, " ", "\\ ")})[1]}
+        if luapdf.verbose then table.insert(args, "-v") end
         -- Relaunch without libunique bindings?
-        if luakit.nounique then table.insert(args, "-U") end
+        if luapdf.nounique then table.insert(args, "-U") end
 
         -- Get new config path
         local conf
-        if luakit.confpath ~= "/etc/xdg/luakit/rc.lua" and os.exists(luakit.confpath) then
-            conf = luakit.confpath
+        if luapdf.confpath ~= "/etc/xdg/luapdf/rc.lua" and os.exists(luapdf.confpath) then
+            conf = luapdf.confpath
             table.insert(args, string.format("-c %q", conf))
         end
 
         -- Check config has valid syntax
         local cmd = table.concat(args, " ")
-        if luakit.spawn_sync(cmd .. " -k") ~= 0 then
+        if luapdf.spawn_sync(cmd .. " -k") ~= 0 then
             return w:error("Cannot restart, syntax error in configuration file"..((conf and ": "..conf) or "."))
         end
 
@@ -703,8 +703,8 @@ window.methods = {
         for _, w in pairs(window.bywidget) do table.insert(wins, w) end
         session.save(wins)
 
-        -- Replace current process with new luakit instance.
-        luakit.exec(cmd)
+        -- Replace current process with new luapdf instance.
+        luapdf.exec(cmd)
     end,
 
     -- Intelligent open command which can detect a uri or search argument.
@@ -759,7 +759,7 @@ window.methods = {
         end
 
         -- URI encode search terms
-        local terms = luakit.uri_encode(table.concat(args, " "))
+        local terms = luapdf.uri_encode(table.concat(args, " "))
         return string.format(search_engines[engine], terms)
     end,
 
