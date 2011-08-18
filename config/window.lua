@@ -36,7 +36,6 @@ function window.build()
                 ebox   = eventbox(),
                 uri    = label(),
                 hist   = label(),
-                loaded = label(),
             },
             -- Fills space between the left and right aligned widgets
             sep = eventbox(),
@@ -45,7 +44,6 @@ function window.build()
                 layout = hbox(),
                 ebox   = eventbox(),
                 buf    = label(),
-                ssl    = label(),
                 tabi   = label(),
                 scroll = label(),
             },
@@ -61,6 +59,7 @@ function window.build()
             prompt  = label(),
             input   = entry(),
         },
+
         closed_tabs = {}
     }
 
@@ -78,13 +77,11 @@ function window.build()
     local l = w.sbar.l
     l.layout:pack(l.uri)
     l.layout:pack(l.hist)
-    l.layout:pack(l.loaded)
     l.ebox.child = l.layout
 
     -- Pack right-aligned statusbar elements
     local r = w.sbar.r
     r.layout:pack(r.buf)
-    r.layout:pack(r.ssl)
     r.layout:pack(r.tabi)
     r.layout:pack(r.scroll)
     r.ebox.child = r.layout
@@ -111,10 +108,8 @@ function window.build()
     -- Other settings
     i.input.show_frame = false
     w.tabs.show_tabs = false
-    l.loaded:hide()
     l.hist:hide()
     l.uri.selectable = true
-    r.ssl:hide()
 
     -- Allows indexing of window struct by window widget
     window.bywidget[w.win] = w
@@ -457,19 +452,6 @@ window.methods = {
         end
     end,
 
-    update_progress = function (w, view, p)
-        if not view then view = w:get_current() end
-        if not p then p = view:get_property("progress") end
-        local loaded = w.sbar.l.loaded
-        if not view:loading() or p == 1 then
-            loaded:hide()
-        else
-            loaded:show()
-            local text = string.format("(%d%%)", p * 100)
-            if loaded.text ~= text then loaded.text = text end
-        end
-    end,
-
     update_scroll = function (w, view)
         if not view then view = w:get_current() end
         local label = w.sbar.r.scroll
@@ -485,27 +467,6 @@ window.methods = {
             label:show()
         else
             label:hide()
-        end
-    end,
-
-    update_ssl = function (w, view)
-        if not view then view = w:get_current() end
-        local trusted = view:ssl_trusted()
-        local ssl = w.sbar.r.ssl
-        if trusted ~= nil and not w.checking_ssl then
-            ssl.fg = theme.notrust_fg
-            ssl.text = "(nocheck)"
-            ssl:show()
-        elseif trusted == true then
-            ssl.fg = theme.trust_fg
-            ssl.text = "(trust)"
-            ssl:show()
-        elseif trusted == false then
-            ssl.fg = theme.notrust_fg
-            ssl.text = "(notrust)"
-            ssl:show()
-        else
-            ssl:hide()
         end
     end,
 
@@ -707,70 +668,6 @@ window.methods = {
         luapdf.exec(cmd)
     end,
 
-    -- Intelligent open command which can detect a uri or search argument.
-    search_open = function (w, arg)
-        local lstring = lousy.util.string
-        local match, find = string.match, string.find
-
-        -- Detect blank uris
-        if not arg or match(arg, "^%s*$") then return "about:blank" end
-
-        -- Strip whitespace and split by whitespace into args table
-        local args = lstring.split(lstring.strip(arg))
-
-        -- Guess if first argument is an address, search engine, file
-        if #args == 1 then
-            local uri = args[1]
-            if uri == "about:blank" then return uri end
-
-            -- Check if search engine name
-            if search_engines[uri] then
-                return string.format(search_engines[uri], "")
-            end
-
-            -- Navigate if . or / in uri (I.e. domains, IP's, scheme://)
-            if find(uri, "%.") or find(uri, "/") then return uri end
-
-            -- Navigate if this is a javascript-uri
-            if find(uri, "^javascript:") then return uri end
-
-            -- Valid hostnames to check
-            local hosts = { "localhost" }
-            if globals.load_etc_hosts ~= false then
-                hosts = lousy.util.get_etc_hosts()
-            end
-
-            -- Check hostnames
-            for _, h in pairs(hosts) do
-                if h == uri or match(uri, "^"..h..":%d+$") then return uri end
-            end
-
-            -- Check for file in filesystem
-            if globals.check_filepath ~= false then
-                if lfs.attributes(uri) then return "file://" .. uri end
-            end
-        end
-
-        -- Find search engine (or use search_engines.default)
-        local engine = "default"
-        if args[1] and search_engines[args[1]] then
-            engine = args[1]
-            table.remove(args, 1)
-        end
-
-        -- URI encode search terms
-        local terms = luapdf.uri_encode(table.concat(args, " "))
-        return string.format(search_engines[engine], terms)
-    end,
-
-    -- Increase (or decrease) the last found number in the current uri
-    inc_uri = function (w, arg)
-        local uri = string.gsub(w:get_current().uri, "(%d+)([^0-9]*)$", function (num, rest)
-            return string.format("%0"..#num.."d", tonumber(num) + (arg or 1)) .. rest
-        end)
-        return uri
-    end,
-
     -- Tab traversing functions
     next_tab = function (w, n)
         w.tabs:switch((((n or 1) + w.tabs:current() -1) % w.tabs:count()) + 1)
@@ -783,16 +680,6 @@ window.methods = {
     goto_tab = function (w, n)
         if n and (n == -1 or n > 0) then
             return w.tabs:switch((n <= w.tabs:count() and n) or -1)
-        end
-    end,
-
-    -- If argument is form-active or root-active, emits signal. Ignores all
-    -- other signals.
-    emit_form_root_active_signal = function (w, s)
-        if s == "form-active" then
-            w:get_current():emit_signal("form-active")
-        elseif s == "root-active" then
-            w:get_current():emit_signal("root-active")
         end
     end,
 }
