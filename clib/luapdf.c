@@ -118,65 +118,6 @@ luaH_luapdf_selection_table_push(lua_State *L)
     return 1;
 }
 
-/** Escapes a string for use in a URI.
- * \see http://developer.gnome.org/glib/stable/glib-URI-Functions.html#g-uri-escape-string
- *
- * \param  L The Lua VM state.
- * \return   The number of elements pushed on stack.
- *
- * \luastack
- * \lparam string  The string to escape for use in a URI.
- * \lparam allowed Optional string of allowed characters to leave unescaped in
- *                 the \c string.
- * \lreturn        The escaped string.
- */
-static gint
-luaH_luapdf_uri_encode(lua_State *L)
-{
-    const gchar *string = luaL_checkstring(L, 1);
-    const gchar *allowed = NULL;
-
-    /* get list of reserved characters that are allowed in the string */
-    if (1 < lua_gettop(L) && !lua_isnil(L, 2))
-        allowed = luaL_checkstring(L, 2);
-
-    gchar *res = g_uri_escape_string(string, allowed, true);
-    lua_pushstring(L, res);
-    g_free(res);
-    return 1;
-}
-
-/** Unescapes an escaped string used in a URI.
- * \see http://developer.gnome.org/glib/stable/glib-URI-Functions.html#g-uri-unescape-string
- *
- * \param  L The Lua VM state.
- * \return   The number of elements pushed on stack.
- *
- * \luastack
- * \lparam string  The string to unescape.
- * \lparam illegal Optional string of illegal chars which should not appear in
- *                 the unescaped string.
- * \lreturn        The unescaped string or \c nil if illegal chars found.
- */
-static gint
-luaH_luapdf_uri_decode(lua_State *L)
-{
-    const gchar *string = luaL_checkstring(L, 1);
-    const gchar *illegal = NULL;
-
-    /* get list of illegal chars not to be found in the unescaped string */
-    if (1 < lua_gettop(L) && !lua_isnil(L, 2))
-        illegal = luaL_checkstring(L, 2);
-
-    gchar *res = g_uri_unescape_string(string, illegal);
-    if (!res)
-        return 0;
-
-    lua_pushstring(L, res);
-    g_free(res);
-    return 1;
-}
-
 /** Shows a Gtk save dialog.
  * \see http://developer.gnome.org/gtk/stable/GtkDialog.html
  *
@@ -500,12 +441,6 @@ luaH_luapdf_index(lua_State *L)
       /* push boolean properties */
       PB_CASE(VERBOSE,          globalconf.verbose)
       PB_CASE(NOUNIQUE,         globalconf.nounique)
-      /* push integer properties */
-      PI_CASE(WEBKIT_MAJOR_VERSION, webkit_major_version())
-      PI_CASE(WEBKIT_MINOR_VERSION, webkit_minor_version())
-      PI_CASE(WEBKIT_MICRO_VERSION, webkit_micro_version())
-      PI_CASE(WEBKIT_USER_AGENT_MAJOR_VERSION, WEBKIT_USER_AGENT_MAJOR_VERSION)
-      PI_CASE(WEBKIT_USER_AGENT_MINOR_VERSION, WEBKIT_USER_AGENT_MINOR_VERSION)
 
       case L_TK_WINDOWS:
         lua_newtable(L);
@@ -652,8 +587,6 @@ luapdf_lib_setup(lua_State *L)
         { "spawn",           luaH_luapdf_spawn },
         { "spawn_sync",      luaH_luapdf_spawn_sync },
         { "time",            luaH_luapdf_time },
-        { "uri_decode",      luaH_luapdf_uri_decode },
-        { "uri_encode",      luaH_luapdf_uri_encode },
         { "idle_add",        luaH_luapdf_idle_add },
         { "idle_remove",     luaH_luapdf_idle_remove },
         { NULL,              NULL }
