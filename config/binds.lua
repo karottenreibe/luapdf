@@ -188,8 +188,6 @@ add_binds("normal", {
                                     end),
 
     -- Commands
-    key({"Control"}, "a",           function (w)    w:navigate(w:inc_uri(1)) end),
-    key({"Control"}, "x",           function (w)    w:navigate(w:inc_uri(-1)) end),
     buf("^o$",                      function (w, c) w:enter_cmd(":open ")    end),
     buf("^t$",                      function (w, c) w:enter_cmd(":tabopen ") end),
     buf("^w$",                      function (w, c) w:enter_cmd(":winopen ") end),
@@ -298,10 +296,8 @@ add_cmds({
     cmd("o[pen]",               function (w, a) w:navigate(w:search_open(a)) end),
     cmd("t[abopen]",            function (w, a) w:new_tab(w:search_open(a)) end),
     cmd("w[inopen]",            function (w, a) window.new{w:search_open(a)} end),
-    cmd({"javascript",   "js"}, function (w, a) w:eval_js(a, "javascript") end),
 
     cmd("q[uit]",               function (w, a, o) w:close_win(o.bang) end),
-    cmd({"viewsource",  "vs" }, function (w, a, o) w:toggle_source(not o.bang and true or nil) end),
     cmd({"writequit", "wq"},    function (w, a, o) w:save_session() w:close_win(o.bang) end),
 
     cmd("lua", function (w, a)
@@ -310,19 +306,6 @@ add_cmds({
             if ret then print(ret) end
         else
             w:set_mode("lua")
-        end
-    end),
-
-    cmd("dump", function (w, a)
-        local fname = string.gsub(w.win.title, '[^%w%.%-]', '_')..'.html' -- sanitize filename
-        local downdir = luapdf.get_special_dir("DOWNLOAD") or "."
-        local file = a or luapdf.save_file("Save file", w.win, downdir, fname)
-        if file then
-            local fd = assert(io.open(file, "w"), "failed to open: " .. file)
-            local html = assert(w:eval_js("document.documentElement.outerHTML", "dump"), "Unable to get HTML")
-            assert(fd:write(html), "unable to save html")
-            io.close(fd)
-            w:notify("Dumped HTML to: " .. file)
         end
     end),
 })
