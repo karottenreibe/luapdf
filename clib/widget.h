@@ -40,7 +40,6 @@ widget_constructor_t widget_eventbox;
 widget_constructor_t widget_label;
 widget_constructor_t widget_notebook;
 widget_constructor_t widget_paned;
-widget_constructor_t widget_webview;
 widget_constructor_t widget_window;
 widget_constructor_t widget_socket;
 

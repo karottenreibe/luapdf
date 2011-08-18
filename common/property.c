@@ -19,6 +19,9 @@
  */
 
 #include "common/property.h"
+#include <stdlib.h>
+#include <gtk/gtk.h>
+#include "luah.h"
 
 GHashTable*
 hash_properties(property_t *properties_table)
@@ -37,7 +40,6 @@ hash_properties(property_t *properties_table)
 gint
 luaH_get_property(lua_State *L, GHashTable *properties, gpointer obj, gint nidx)
 {
-    SoupURI *u;
     GObject *so;
     property_t *p;
     property_tmp_value_t tmp;
@@ -88,9 +90,7 @@ luaH_get_property(lua_State *L, GHashTable *properties, gpointer obj, gint nidx)
 gint
 luaH_set_property(lua_State *L, GHashTable *properties, gpointer obj, gint nidx, gint vidx)
 {
-    size_t len;
     GObject *so;
-    SoupURI *u;
     property_t *p;
     property_tmp_value_t tmp;
 

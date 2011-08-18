@@ -31,7 +31,6 @@ widget_info_t widgets_list[] = {
   { L_TK_SOCKET,    "socket",   widget_socket   },
   { L_TK_VBOX,      "vbox",     widget_box      },
   { L_TK_VPANED,    "vpaned",   widget_paned    },
-  { L_TK_WEBVIEW,   "webview",  widget_webview  },
   { L_TK_WINDOW,    "window",   widget_window   },
 };
 
