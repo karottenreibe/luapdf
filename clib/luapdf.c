@@ -28,7 +28,6 @@
 #include <gtk/gtk.h>
 #include <sys/wait.h>
 #include <time.h>
-#include <webkit/webkit.h>
 
 /* setup luapdf module signals */
 LUA_CLASS_FUNCS(luapdf, luapdf_class)

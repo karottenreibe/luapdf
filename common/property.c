@@ -19,9 +19,6 @@
  */
 
 #include "common/property.h"
-#include "clib/soup/soup.h"
-
-#include <webkit/webkit.h>
 
 GHashTable*
 hash_properties(property_t *properties_table)
@@ -34,25 +31,6 @@ hash_properties(property_t *properties_table)
         g_hash_table_insert(properties, (gpointer) p->name, (gpointer) p);
     }
     return properties;
-}
-
-inline static GObject*
-get_scope_object(gpointer obj, property_t *p)
-{
-    switch (p->scope) {
-      case SETTINGS:
-        return G_OBJECT(webkit_web_view_get_settings(WEBKIT_WEB_VIEW(obj)));
-      case WEBKITVIEW:
-        return G_OBJECT(obj);
-      case SESSION:
-        return G_OBJECT(soupconf.session);
-      case COOKIEJAR:
-        return G_OBJECT(soupconf.cookiejar);
-      default:
-        break;
-    }
-    warn("programmer error: unknown settings scope for property: %s", p->name);
-    return NULL;
 }
 
 /* sets a gobject property from lua */
@@ -68,7 +46,7 @@ luaH_get_property(lua_State *L, GHashTable *properties, gpointer obj, gint nidx)
     const gchar *name = luaL_checkstring(L, nidx);
     if ((p = g_hash_table_lookup(properties, name))) {
         /* get scope object */
-        so = get_scope_object(obj, p);
+        so = G_OBJECT(obj);
 
         switch(p->type) {
           case BOOL:
@@ -94,14 +72,6 @@ luaH_get_property(lua_State *L, GHashTable *properties, gpointer obj, gint nidx)
           case CHAR:
             g_object_get(so, p->name, &tmp.c, NULL);
             lua_pushstring(L, tmp.c);
-            g_free(tmp.c);
-            return 1;
-
-          case URI:
-            g_object_get(so, p->name, &u, NULL);
-            tmp.c = u ? soup_uri_to_string(u, 0) : NULL;
-            lua_pushstring(L, tmp.c);
-            if (u) soup_uri_free(u);
             g_free(tmp.c);
             return 1;
 
@@ -132,7 +102,7 @@ luaH_set_property(lua_State *L, GHashTable *properties, gpointer obj, gint nidx,
             return 0;
         }
 
-        so = get_scope_object(obj, p);
+        so = G_OBJECT(obj);
         switch(p->type) {
           case BOOL:
             tmp.b = luaH_checkboolean(L, vidx);
@@ -157,22 +127,6 @@ luaH_set_property(lua_State *L, GHashTable *properties, gpointer obj, gint nidx,
           case CHAR:
             tmp.c = (gchar*) luaL_checkstring(L, vidx);
             g_object_set(so, p->name, tmp.c, NULL);
-            return 0;
-
-          case URI:
-            tmp.c = (gchar*) luaL_checklstring(L, vidx, &len);
-            /* use http protocol if none specified */
-            if (!len || g_strrstr(tmp.c, "://"))
-                tmp.c = g_strdup(tmp.c);
-            else
-                tmp.c = g_strdup_printf("http://%s", tmp.c);
-            u = soup_uri_new(tmp.c);
-            if (!u || SOUP_URI_VALID_FOR_HTTP(u))
-                g_object_set(so, p->name, u, NULL);
-            else
-                luaL_error(L, "cannot parse uri: %s", tmp.c);
-            if (u) soup_uri_free(u);
-            g_free(tmp.c);
             return 0;
 
           default:

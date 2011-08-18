@@ -316,15 +316,6 @@ function ntos(num, sigs)
     return (#dec == 0 and num) or (num .. "." .. dec)
 end
 
---- Escape values for SQL queries.
--- In sqlite3: "A string constant is formed by enclosing the string in single
--- quotes ('). A single quote within the string can be encoded by putting two
--- single quotes in a row - as in Pascal."
--- Read: http://sqlite.org/lang_expr.html
-function sql_escape(s)
-    return "'" .. rstring.gsub(s or "", "'", "''") .. "'"
-end
-
 --- Get all hostnames in /etc/hosts
 -- @param Force re-load of /etc/hosts
 -- @return Table of all hostnames in /etc/hosts

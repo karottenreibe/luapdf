@@ -9,7 +9,6 @@ require("lousy.mode")
 require("lousy.theme")
 require("lousy.signal")
 require("lousy.widget")
-require("lousy.uri")
 
 --- Useful functions for luapdf.
 module("lousy")

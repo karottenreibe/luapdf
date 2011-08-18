@@ -22,9 +22,6 @@
 #include "luah.h"
 
 /* include clib headers */
-#include "clib/download.h"
-#include "clib/soup/soup.h"
-#include "clib/sqlite3.h"
 #include "clib/timer.h"
 #include "clib/widget.h"
 #include "clib/luapdf.h"
@@ -366,9 +363,6 @@ luaH_init(void)
     /* Export luapdf lib */
     luapdf_lib_setup(L);
 
-    /* Export soup lib */
-    soup_lib_setup(L);
-
 #if WITH_UNIQUE
     if (!globalconf.nounique)
         /* Export unique lib */
@@ -377,12 +371,6 @@ luaH_init(void)
 
     /* Export widget */
     widget_class_setup(L);
-
-    /* Export download */
-    download_class_setup(L);
-
-    /* Export sqlite3 */
-    sqlite3_class_setup(L);
 
     /* Export timer */
     timer_class_setup(L);

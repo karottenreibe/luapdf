@@ -21,7 +21,6 @@
 #include <gdk/gdkx.h>
 #include "luah.h"
 #include "widgets/common.h"
-#include "clib/soup/auth.h"
 
 static void
 destroy_cb(GtkObject* UNUSED(win), widget_t *w)

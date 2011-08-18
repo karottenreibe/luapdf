@@ -11,9 +11,6 @@ module("luapdf")
 -- @field verbose verbosity (boolean value)
 -- @field install_path luapdf installation path (read only property)
 -- @field version luapdf version (read only property)
--- @field webkit_major_version webkit major version that luapdf is linked against (read only property)
--- @field webkit_minor_version webkit minor version that luapdf is linked against (read only property)
--- @field webkit_micro_version webkit micro version that luapdf is linked against (read only property)
 -- @class table
 -- @name luapdf
 
@@ -57,14 +54,3 @@ module("luapdf")
 -- @name get_special_dir
 -- @class function
 
---- Escape a string for use in a URI.
--- @param string A string to encode.
--- @return A percent-encoded string.
--- @name uri-encode
--- @class function
-
---- Unescape a whole escaped string.
--- @param string A percent-encoded string.
--- @return An unescaped string.
--- @name uri-decode
--- @class function

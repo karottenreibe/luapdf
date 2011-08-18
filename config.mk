@@ -46,7 +46,7 @@ have lua >= 5.1 installed)
 endif
 
 # Packages required to build luapdf
-PKGS := gtk+-2.0 gthread-2.0 webkit-1.0 sqlite3 $(LUA_PKG_NAME)
+PKGS := gtk+-2.0 gthread-2.0 $(LUA_PKG_NAME)
 
 # Build luapdf with libunqiue bindings (for writing simple single-
 # instance applications using dbus).
