@@ -27,7 +27,6 @@
 
 typedef struct {
     LUA_OBJECT_HEADER
-    gpointer ref;
     PopplerDocument *document;
     const gchar *uri;
     const gchar *password;
@@ -42,9 +41,6 @@ static int
 luaH_document_gc(lua_State *L) {
     ldocument_t *document = luaH_checkdocument(L, -1);
     g_free(document->document);
-    /* allow document to be garbage collected */
-    luaH_object_unref(L, document->ref);
-    document->ref = NULL;
     return 0;
 }
 
