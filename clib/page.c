@@ -41,7 +41,7 @@ luaH_page_gc(lua_State *L) {
     return 0;
 }
 
-static int
+int
 luaH_page_new(lua_State *L, PopplerDocument *document, int index)
 {
     luaH_class_new(L, &page_class);

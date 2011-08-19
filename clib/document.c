@@ -20,6 +20,7 @@
  */
 
 #include "clib/document.h"
+#include "clib/page.h"
 #include "luah.h"
 
 #include <glib.h>
@@ -92,6 +93,19 @@ luaH_document_get_password(lua_State *L, ldocument_t *document)
     return 1;
 }
 
+static int
+luaH_document_get_pages(lua_State *L, ldocument_t *document)
+{
+    lua_newtable(L);
+    PopplerDocument *doc = document->document;
+    int n = poppler_document_get_n_pages(doc);
+    for (int i = 0; i < n; ++i) {
+        luaH_page_new(L, doc, i);
+        lua_rawseti(L, -2, i + 1);
+    }
+    return 1;
+}
+
 void
 document_class_setup(lua_State *L)
 {
@@ -119,6 +133,11 @@ document_class_setup(lua_State *L)
             (lua_class_propfunc_t) luaH_document_set_uri,
             (lua_class_propfunc_t) luaH_document_get_uri,
             (lua_class_propfunc_t) luaH_document_set_uri);
+
+    luaH_class_add_property(&document_class, L_TK_PAGES,
+            NULL,
+            (lua_class_propfunc_t) luaH_document_get_pages,
+            NULL);
 
     luaH_class_add_property(&document_class, L_TK_PASSWORD,
             (lua_class_propfunc_t) luaH_document_set_password,

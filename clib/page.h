@@ -26,7 +26,7 @@
 #include <poppler.h>
 
 void page_class_setup(lua_State *);
-static int luaH_page_new(lua_State *, PopplerDocument *, int);
+int luaH_page_new(lua_State *, PopplerDocument *, int);
 
 #endif
 
