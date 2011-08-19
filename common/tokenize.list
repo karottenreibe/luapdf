@@ -70,6 +70,7 @@ pack
 pack1
 pack2
 padding
+password
 path
 PICTURES
 position
@@ -116,6 +117,7 @@ total_size
 type
 unfullscreen
 unmaximize
+uri
 value
 vbox
 verbose
