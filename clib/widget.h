@@ -42,6 +42,7 @@ widget_constructor_t widget_notebook;
 widget_constructor_t widget_paned;
 widget_constructor_t widget_window;
 widget_constructor_t widget_socket;
+widget_constructor_t widget_image;
 
 typedef const struct {
     luapdf_token_t tok;
@@ -90,6 +91,8 @@ luaH_checkwidgetornil(lua_State *L, gint udx)
 }
 
 #define luaH_towidget(L, udx) luaH_toudata(L, udx, &widget_class)
+
+gint luaH_widget_new(lua_State *);
 
 #endif
 

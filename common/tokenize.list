@@ -50,6 +50,7 @@ homogeneous
 hpaned
 icon
 id
+image
 indexof
 insert
 install_path
@@ -125,6 +126,7 @@ verbose
 version
 VIDEOS
 vpaned
+widget
 width
 window
 windows

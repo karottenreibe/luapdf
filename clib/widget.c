@@ -32,6 +32,7 @@ widget_info_t widgets_list[] = {
   { L_TK_VBOX,      "vbox",     widget_box      },
   { L_TK_VPANED,    "vpaned",   widget_paned    },
   { L_TK_WINDOW,    "window",   widget_window   },
+  { L_TK_IMAGE,     "image",    widget_image    },
 };
 
 LUA_OBJECT_FUNCS(widget_class, widget_t, widget);
@@ -57,7 +58,7 @@ luaH_widget_gc(lua_State *L)
  * \lparam A table with at least a type value.
  * \lreturn A brand new widget.
  */
-static gint
+gint
 luaH_widget_new(lua_State *L)
 {
     luaH_class_new(L, &widget_class);

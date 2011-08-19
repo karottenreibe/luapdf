@@ -35,11 +35,12 @@ luaH_image_index(lua_State *L, luapdf_token_t token)
     return 0;
 }
 
-void
+int
 luaH_image_set_pixbuf(lua_State *L, GdkPixbuf *buf)
 {
     widget_t *w = luaH_checkwidget(L, 1);
     gtk_image_set_from_pixbuf(GTK_IMAGE(w->widget), buf);
+    return 0;
 }
 
 widget_t *

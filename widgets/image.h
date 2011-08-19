@@ -23,8 +23,7 @@
 
 #include "clib/widget.h"
 
-widget_t * widget_image(widget_t *, luapdf_token_t);
-void luaH_image_set_pixbuf(lua_State *, GdkPixbuf *);
+int luaH_image_set_pixbuf(lua_State *, GdkPixbuf *);
 
 #endif
 // vim: ft=c:et:sw=4:ts=8:sts=4:tw=80
