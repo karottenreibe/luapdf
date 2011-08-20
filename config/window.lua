@@ -122,22 +122,22 @@ end
 window.init_funcs = {
     -- Attach notebook widget signals
     notebook_signals = function (w)
-        w.tabs:add_signal("page-added", function (nbook, view, idx)
+        w.tabs:add_signal("page-added", function (nbook, doc, idx)
             w:update_tab_count(idx)
             w:update_tablist()
         end)
-        w.tabs:add_signal("switch-page", function (nbook, view, idx)
+        w.tabs:add_signal("switch-page", function (nbook, doc, idx)
             w:set_mode()
             w:update_tab_count(idx)
-            w:update_win_title(view)
-            w:update_uri(view)
-            w:update_progress(view)
+            w:update_win_title(doc)
+            w:update_uri(doc)
+            w:update_progress(doc)
             w:update_tablist(idx)
             w:update_buf()
-            w:update_ssl(view)
-            w:update_hist(view)
+            w:update_ssl(doc)
+            w:update_hist(doc)
         end)
-        w.tabs:add_signal("page-reordered", function (nbook, view, idx)
+        w.tabs:add_signal("page-reordered", function (nbook, doc, idx)
             w:update_tab_count()
             w:update_tablist()
         end)
@@ -237,9 +237,9 @@ window.methods = {
     -- Check if given widget is the widget in the currently active tab
     is_current  = function (w, wi)   return w.tabs:indexof(wi) == w.tabs:current() end,
 
-    get_tab_title = function (w, view)
-        if not view then view = w:get_current() end
-        return view:get_property("title") or view.uri or "(Untitled)"
+    get_tab_title = function (w, doc)
+        if not doc then doc = w:get_current() end
+        return doc:get_property("title") or doc.uri or "(Untitled)"
     end,
 
     -- Wrapper around the bind plugin's hit method
@@ -433,30 +433,30 @@ window.methods = {
         w.sbar.r.tabi.text = string.format("[%d/%d]", i or w.tabs:current(), t or w.tabs:count())
     end,
 
-    update_win_title = function (w, view)
-        if not view then view = w:get_current() end
-        local uri, title = view.uri, view:get_property("title")
+    update_win_title = function (w, doc)
+        if not doc then doc = w:get_current() end
+        local uri, title = doc.uri, doc:get_property("title")
         title = (title or "luapdf") .. ((uri and " - " .. uri) or "")
         local max = globals.max_title_len or 80
         if #title > max then title = string.sub(title, 1, max) .. "..." end
         w.win.title = title
     end,
 
-    update_uri = function (w, view, uri, link)
+    update_uri = function (w, doc, uri, link)
         local u, escape = w.sbar.l.uri, lousy.util.escape
         if link then
             u.text = "Link: " .. escape(link)
         else
-            if not view then view = w:get_current() end
-            u.text = escape((uri or (view and view.uri) or "about:blank"))
+            if not doc then doc = w:get_current() end
+            u.text = escape((uri or (doc and doc.uri) or "about:blank"))
         end
     end,
 
-    update_scroll = function (w, view)
-        if not view then view = w:get_current() end
+    update_scroll = function (w, doc)
+        if not doc then doc = w:get_current() end
         local label = w.sbar.r.scroll
-        if view then
-            local scroll = view.scroll
+        if doc then
+            local scroll = doc.scroll
             local y, max, text = scroll.y, scroll.ymax
             if     max == 0   then text = "All"
             elseif y   == 0   then text = "Top"
@@ -470,10 +470,10 @@ window.methods = {
         end
     end,
 
-    update_hist = function (w, view)
-        if not view then view = w:get_current() end
+    update_hist = function (w, doc)
+        if not doc then doc = w:get_current() end
         local hist = w.sbar.l.hist
-        local back, forward = view:can_go_back(), view:can_go_forward()
+        local back, forward = doc:can_go_back(), doc:can_go_forward()
         local s = (back and "+" or "") .. (forward and "-" or "")
         if s ~= "" then
             hist.text = '['..s..']'
@@ -508,13 +508,13 @@ window.methods = {
         local escape, get_title = lousy.util.escape, w.get_tab_title
         local tabs, tfmt = {}, ' <span foreground="%s">%s</span> %s'
 
-        for i, view in ipairs(w.tabs.children) do
+        for i, doc in ipairs(w.tabs.children) do
             -- Get tab number theme
             local ntheme = nfg
-            if view:loading() then -- Show loading on all tabs
+            if doc:loading() then -- Show loading on all tabs
                 ntheme = lfg
             elseif current == i then -- Show ssl trusted/untrusted on current tab
-                local trusted = view:ssl_trusted()
+                local trusted = doc:ssl_trusted()
                 ntheme = snfg
                 if trusted == false or (trusted ~= nil and not w.checking_ssl) then
                     ntheme = bfg
@@ -524,7 +524,7 @@ window.methods = {
             end
 
             tabs[i] = {
-                title = string.format(tfmt, ntheme or fg, i, escape(get_title(w, view))),
+                title = string.format(tfmt, ntheme or fg, i, escape(get_title(w, doc))),
                 fg = (current == i and theme.tab_selected_fg) or fg,
                 bg = (current == i and theme.tab_selected_bg) or bg,
             }
@@ -535,48 +535,48 @@ window.methods = {
     end,
 
     new_tab = function (w, arg, switch, order)
-        local view
+        local doc
         -- Use blank tab first
         if w.has_blank and w.tabs:count() == 1 and w.tabs[1].uri == "about:blank" then
-            view = w.tabs[1]
+            doc = w.tabs[1]
         end
         w.has_blank = nil
         -- Make new page widget
-        if not view then
-            view = webview.new(w)
+        if not doc then
+            doc = webdoc.new(w)
             -- Get tab order function
             if not order and taborder then
                 order = (switch == false and taborder.default_bg)
                     or taborder.default
             end
-            pos = w.tabs:insert((order and order(w, view)) or -1, view)
+            pos = w.tabs:insert((order and order(w, doc)) or -1, doc)
             if switch ~= false then w.tabs:switch(pos) end
         end
-        -- Load uri or webview history table
-        if type(arg) == "string" then view.uri = arg
-        elseif type(arg) == "table" then view.history = arg end
+        -- Load uri or webdoc history table
+        if type(arg) == "string" then doc.uri = arg
+        elseif type(arg) == "table" then doc.history = arg end
         -- Update statusbar widgets
         w:update_tab_count()
         w:update_tablist()
-        return view
+        return doc
     end,
 
     -- close the current tab
-    close_tab = function (w, view, blank_last)
-        view = view or w:get_current()
+    close_tab = function (w, doc, blank_last)
+        doc = doc or w:get_current()
         -- Treat a blank last tab as an empty notebook (if blank_last=true)
         if blank_last ~= false and w.tabs:count() == 1 then
-            if not view:loading() and view.uri == "about:blank" then return end
+            if not doc:loading() and doc.uri == "about:blank" then return end
             w:new_tab("about:blank", false)
             w.has_blank = true
         end
         -- Save tab history
-        local tab = {hist = view.history,}
+        local tab = {hist = doc.history,}
         -- And relative location
-        local index = w.tabs:indexof(view)
+        local index = w.tabs:indexof(doc)
         if index ~= 1 then tab.after = w.tabs[index-1] end
         table.insert(w.closed_tabs, tab)
-        view:destroy()
+        doc:destroy()
         w:update_tab_count()
         w:update_tablist()
     end,
@@ -624,15 +624,15 @@ window.methods = {
         if #luapdf.windows == 0 then luapdf.quit() end
     end,
 
-    -- Navigate current view or open new tab
-    navigate = function (w, uri, view)
-        if not view then view = w:get_current() end
-        if view then
+    -- Navigate current doc or open new tab
+    navigate = function (w, uri, doc)
+        if not doc then doc = w:get_current() end
+        if doc then
             local js = string.match(uri, "^javascript:(.+)$")
             if js then
-                return view:eval_js(luapdf.uri_decode(js), "(javascript-uri)")
+                return doc:eval_js(luapdf.uri_decode(js), "(javascript-uri)")
             end
-            view.uri = uri
+            doc.uri = uri
         else
             return w:new_tab(uri)
         end
