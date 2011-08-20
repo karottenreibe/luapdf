@@ -15,7 +15,6 @@ local pairs = pairs
 local ipairs = ipairs
 local assert = assert
 local capi = { luakit = luakit }
-local chrome = require("chrome")
 local lousy = require("lousy")
 local util = lousy.util
 local add_binds, add_cmds = add_binds, add_cmds
@@ -189,73 +188,12 @@ function load(file, clear_first)
     end
 end
 
---- Shows the chrome page in the given view.
-chrome.add("bookmarks/", function (view, uri)
-    -- Get a list of all the unique tags in all the bookmarks and build a
-    -- relation between a given tag and a list of bookmarks with that tag.
-    local tags = {}
-    local id = 0
-    for _, bm in pairs(data) do
-        id = id + 1
-        bm['id'] = id
-        for _, t in ipairs(bm.tags) do
-            if not tags[t] then tags[t] = {} end
-            tags[t][bm.uri] = bm
-        end
-    end
-
-    -- For each tag build
-    local lines = {}
-    for _, tag in ipairs(util.table.keys(tags)) do
-        local links = {}
-        for _, uri in ipairs(util.table.keys(tags[tag])) do
-            local bm = tags[tag][uri]
-            local link_subs = {
-                uri = bm.uri,
-                id = bm.id,
-                name = util.escape(bm.uri),
-            }
-            local link = string.gsub(link_template, "{(%w+)}", link_subs)
-            table.insert(links, link)
-        end
-
-        local block_subs = {
-            tag   = tag,
-            links = table.concat(links, "\n")
-        }
-        local block = string.gsub(block_template, "{(%w+)}", block_subs)
-        table.insert(lines, block)
-    end
-
-    local html_subs = {
-        tags  = table.concat(lines, "\n\n"),
-        title = html_page_title,
-        style = html_style
-    }
-
-    local html = string.gsub(html_template, "{(%w+)}", html_subs)
-    view:load_string(html, tostring(uri))
-end)
-
--- URI of the chrome page
-chrome_page    = "luakit://bookmarks/"
-
 -- Add normal binds.
 local key, buf = lousy.bind.key, lousy.bind.buf
 add_binds("normal", {
     key({}, "B", function (w)
         w:enter_cmd(":bookmark " .. (w:get_current().uri or "http://") .. " ")
     end),
-
-    buf("^gb$", function (w)
-        w:navigate(chrome_page)
-    end),
-
-    buf("^gB$", function (w, b, m)
-        for i=1, m.count do
-            w:new_tab(chrome_page)
-        end
-    end, {count=1}),
 })
 
 -- Add commands.
@@ -273,10 +211,6 @@ add_cmds({
 
     cmd("bookdel", function (w, a)
         del(tonumber(a))
-    end),
-
-    cmd("bookmarks", function (w)
-        w:navigate(chrome_page)
     end),
 })
 
