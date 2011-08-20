@@ -68,7 +68,7 @@ add_binds("all", {
                 w:new_tab(uri, false)
             else -- Open selection in current tab
                 uri = luapdf.selection.primary
-                if uri then w:navigate(w:search_open(uri)) end
+                if uri then w:navigate(uri) end
             end
         end
     end),
@@ -166,12 +166,12 @@ add_binds("normal", {
     -- Clipboard
     key({},          "p",           function (w)
                                         local uri = luapdf.selection.primary
-                                        if uri then w:navigate(w:search_open(uri)) else w:error("Empty selection.") end
+                                        if uri then w:navigate(uri) else w:error("Empty selection.") end
                                     end),
     key({},          "P",           function (w, m)
                                         local uri = luapdf.selection.primary
                                         if not uri then w:error("Empty selection.") return end
-                                        for i = 1, m.count do w:new_tab(w:search_open(uri)) end
+                                        for i = 1, m.count do w:new_tab(uri) end
                                     end, {count = 1}),
 
     -- Yanking
@@ -293,9 +293,9 @@ add_cmds({
     cmd("back",                 function (w, a) w:back(tonumber(a) or 1) end),
     cmd("f[orward]",            function (w, a) w:forward(tonumber(a) or 1) end),
     cmd("inc[rease]",           function (w, a) w:navigate(w:inc_uri(tonumber(a) or 1)) end),
-    cmd("o[pen]",               function (w, a) w:navigate(w:search_open(a)) end),
-    cmd("t[abopen]",            function (w, a) w:new_tab(w:search_open(a)) end),
-    cmd("w[inopen]",            function (w, a) window.new{w:search_open(a)} end),
+    cmd("o[pen]",               function (w, a) w:navigate(a) end),
+    cmd("t[abopen]",            function (w, a) w:new_tab(a) end),
+    cmd("w[inopen]",            function (w, a) window.new{a} end),
 
     cmd("q[uit]",               function (w, a, o) w:close_win(o.bang) end),
     cmd({"writequit", "wq"},    function (w, a, o) w:save_session() w:close_win(o.bang) end),

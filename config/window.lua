@@ -706,7 +706,7 @@ function window.new(uris)
 
     -- Populate notebook with tabs
     for _, uri in ipairs(uris or {}) do
-        w:new_tab(w:search_open(uri), false)
+        w:new_tab(uri, false)
     end
 
     -- Make sure something is loaded

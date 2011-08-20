@@ -126,7 +126,7 @@ add_binds("normal", {
     buf("^g[onw]%w$", function (w, b, m)
         local mode, token = string.match(b, "^g(.)(.)$")
         local uris = lousy.util.table.clone(get(token) or {})
-        for i, uri in ipairs(uris) do uris[i] = w:search_open(uri) end
+        for i, uri in ipairs(uris) do uris[i] = uri end
         for c=1,m.count do
             if mode == "w" then
                 window.new(uris)
@@ -233,7 +233,6 @@ add_binds("qmarklist", lousy.util.table.join({
         local row = w.menu:get()
         if row and row.qmark then
             for i, uri in ipairs(get(row.qmark) or {}) do
-                uri = w:search_open(uri)
                 if i == 1 then w:navigate(uri) else w:new_tab(uri, false) end
             end
         end
@@ -244,7 +243,7 @@ add_binds("qmarklist", lousy.util.table.join({
         local row = w.menu:get()
         if row and row.qmark then
             for _, uri in ipairs(get(row.qmark) or {}) do
-                w:new_tab(w:search_open(uri), false)
+                w:new_tab(uri, false)
             end
         end
     end),
