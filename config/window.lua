@@ -541,7 +541,7 @@ window.methods = {
             view = w.tabs[1]
         end
         w.has_blank = nil
-        -- Make new webview widget
+        -- Make new page widget
         if not view then
             view = webview.new(w)
             -- Get tab order function
@@ -684,7 +684,7 @@ window.methods = {
     end,
 }
 
--- Ordered list of class index functions. Other classes (E.g. webview) are able
+-- Ordered list of class index functions. Other classes are able
 -- to add their own index functions to this list.
 window.indexes = {
     -- Find function in window.methods first

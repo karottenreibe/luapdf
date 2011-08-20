@@ -1,5 +1,5 @@
 ------------------------------------------------------
--- Search for a string in the current webview       --
+-- Search for a string in the current document      --
 -- © 2010 Mason Larobina <mason.larobina@gmail.com> --
 ------------------------------------------------------
 
@@ -109,7 +109,7 @@ add_binds("search", {
     end),
 })
 
--- Add search functions to webview
+-- Add search functions to document
 for k, m in pairs({
     start_search = function (view, w, text)
         if string.match(text, "^[?/]") then

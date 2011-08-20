@@ -24,24 +24,28 @@ require "lousy"
 function warn(...) io.stderr:write(string.format(...) .. "\n") end
 function info(...) if luapdf.verbose then io.stderr:write(string.format(...) .. "\n") end end
 
--- Load users global config
+-- Load user's global config
 -- ("$XDG_CONFIG_HOME/luapdf/globals.lua" or "/etc/xdg/luapdf/globals.lua")
 require "globals"
 
--- Load users theme
+-- Load user's theme
 -- ("$XDG_CONFIG_HOME/luapdf/theme.lua" or "/etc/xdg/luapdf/theme.lua")
 lousy.theme.init(lousy.util.find_config("theme.lua"))
 theme = assert(lousy.theme.get(), "failed to load theme")
 
--- Load users window class
+-- Load user's window class
 -- ("$XDG_CONFIG_HOME/luapdf/window.lua" or "/etc/xdg/luapdf/window.lua")
 require "window"
 
--- Load users mode configuration
+-- Load user's document class
+-- ("$XDG_CONFIG_HOME/luapdf/document.lua" or "/etc/xdg/luapdf/document.lua")
+require "document"
+
+-- Load user's mode configuration
 -- ("$XDG_CONFIG_HOME/luapdf/modes.lua" or "/etc/xdg/luapdf/modes.lua")
 require "modes"
 
--- Load users keybindings
+-- Load user's keybindings
 -- ("$XDG_CONFIG_HOME/luapdf/binds.lua" or "/etc/xdg/luapdf/binds.lua")
 require "binds"
 
