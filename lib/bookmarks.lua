@@ -14,7 +14,7 @@ local type = type
 local pairs = pairs
 local ipairs = ipairs
 local assert = assert
-local capi = { luakit = luakit }
+local capi = { luapdf = luapdf }
 local lousy = require("lousy")
 local util = lousy.util
 local add_binds, add_cmds = add_binds, add_cmds
@@ -29,7 +29,7 @@ module("bookmarks")
 local data = {}
 
 -- Some default settings
-bookmarks_file = capi.luakit.data_dir .. '/bookmarks'
+bookmarks_file = capi.luapdf.data_dir .. '/bookmarks'
 
 -- Templates
 block_template = [==[<div class="tag"><h1>{tag}</h1><ul>{links}</ul></div>]==]
@@ -164,7 +164,7 @@ function del(index, save_bookmarks)
     -- Refresh open bookmarks views
     for _, w in pairs(window.bywidget) do
         for _, v in ipairs(w.tabs.children) do
-            if string.match(v.uri, "^luakit://bookmarks/?") then
+            if string.match(v.uri, "^luapdf://bookmarks/?") then
                 v:reload()
             end
         end
