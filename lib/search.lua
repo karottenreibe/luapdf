@@ -170,6 +170,6 @@ for k, m in pairs({
         end
     end,
 
-}) do webview.methods[k] = m end
+}) do document.methods[k] = m end
 
 -- vim: et:sw=4:ts=8:sts=4:tw=80

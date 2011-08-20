@@ -2,7 +2,12 @@
 -- Poppler Document class --
 ----------------------------
 
--- Webdoc class table
+-- preserve PopplerDocument wrapper class locally
+local clib = {
+    document = document,
+}
+
+-- Document class table
 document = {}
 
 -- Table of functions which are called on new document widgets.

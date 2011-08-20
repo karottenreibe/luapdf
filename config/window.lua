@@ -1,7 +1,6 @@
 ------------------
 -- Window class --
 ------------------
-
 -- Window class table
 window = {}
 

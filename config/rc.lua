@@ -39,6 +39,8 @@ require "window"
 
 -- Load user's document class
 -- ("$XDG_CONFIG_HOME/luapdf/document.lua" or "/etc/xdg/luapdf/document.lua")
+-- package.loaded.document was set on class creation of the document class
+package.loaded.document = false
 require "document"
 
 -- Load user's mode configuration
@@ -73,9 +75,6 @@ require "search"
 
 -- Add ordering of new tabs
 require "taborder"
-
--- Save web history
-require "history"
 
 -- Add command completion
 require "completion"
