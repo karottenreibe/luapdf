@@ -49,7 +49,10 @@ luaH_page_gc(lua_State *L) {
 int
 luaH_page_new(lua_State *L, PopplerDocument *document, int index)
 {
+    lua_newtable(L);
+    lua_insert(L, 2);
     luaH_class_new(L, &page_class);
+    lua_remove(L, 2);
     lpage_t *page = luaH_checkpage(L, -1);
     page->page = poppler_document_get_page(document, index);
     page->widget_ref = NULL;
@@ -65,7 +68,9 @@ luaH_page_get_widget(lua_State *L, lpage_t *page)
         lua_pushstring(L, "type");
         lua_pushstring(L, "image");
         lua_rawset(L, -3);
+        lua_insert(L, 2);
         luaH_widget_new(L);
+        lua_remove(L, 2);
         /* set contents */
         PopplerPage *p = page->page;
         double w, h;

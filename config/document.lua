@@ -118,8 +118,8 @@ function document.methods.scroll(doc, w, new)
     end
 end
 
-function document.new(w)
-    local doc = widget{type = "document"}
+function document.new(w, uri, password)
+    local doc = clib.document{uri = uri, password = password}
 
     doc.show_scrollbars = false
 

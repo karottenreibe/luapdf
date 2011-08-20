@@ -62,7 +62,15 @@ luaH_document_new(lua_State *L)
 static int
 luaH_document_set_uri(lua_State *L, ldocument_t *document)
 {
-    document->uri = luaL_checkstring(L, -1);
+    const gchar *uri = luaL_checkstring(L, -1);
+    GError *error = NULL;
+    uri = g_filename_to_uri(uri, NULL, &error);
+    if (error) {
+        lua_pushstring(L, error->message);
+        lua_error(L);
+    } else {
+        document->uri = uri;
+    }
     return 0;
 }
 

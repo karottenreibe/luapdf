@@ -530,18 +530,17 @@ window.methods = {
         w.has_blank = nil
         -- Make new page widget
         if not doc then
-            doc = webdoc.new(w)
+            doc = document.new(w, arg)
             -- Get tab order function
             if not order and taborder then
                 order = (switch == false and taborder.default_bg)
                     or taborder.default
             end
-            pos = w.tabs:insert((order and order(w, doc)) or -1, doc)
+            local p = doc.pages[1]
+            p = p.widget
+            pos = w.tabs:insert((order and order(w, doc)) or -1, doc.pages[1].widget)
             if switch ~= false then w.tabs:switch(pos) end
         end
-        -- Load uri or webdoc history table
-        if type(arg) == "string" then doc.uri = arg
-        elseif type(arg) == "table" then doc.history = arg end
         -- Update statusbar widgets
         w:update_tab_count()
         w:update_tablist()
