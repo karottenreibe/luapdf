@@ -133,7 +133,6 @@ window.init_funcs = {
             w:update_progress(doc)
             w:update_tablist(idx)
             w:update_buf()
-            w:update_ssl(doc)
             w:update_hist(doc)
         end)
         w.tabs:add_signal("page-reordered", function (nbook, doc, idx)
@@ -181,7 +180,6 @@ window.init_funcs = {
         for wi, v in pairs({
             [s.l.uri]    = theme.uri_sbar_fg,
             [s.l.hist]   = theme.hist_sbar_fg,
-            [s.l.loaded] = theme.sbar_loaded_fg,
             [s.r.buf]    = theme.buf_sbar_fg,
             [s.r.tabi]   = theme.tabi_sbar_fg,
             [s.r.scroll] = theme.scroll_sbar_fg,
@@ -203,9 +201,7 @@ window.init_funcs = {
         for wi, v in pairs({
             [s.l.uri]    = theme.uri_sbar_font,
             [s.l.hist]   = theme.hist_sbar_font,
-            [s.l.loaded] = theme.sbar_loaded_font,
             [s.r.buf]    = theme.buf_sbar_font,
-            [s.r.ssl]    = theme.ssl_sbar_font,
             [s.r.tabi]   = theme.tabi_sbar_font,
             [s.r.scroll] = theme.scroll_sbar_font,
             [i.prompt]   = theme.prompt_ibar_font,
@@ -512,14 +508,6 @@ window.methods = {
             local ntheme = nfg
             if doc:loading() then -- Show loading on all tabs
                 ntheme = lfg
-            elseif current == i then -- Show ssl trusted/untrusted on current tab
-                local trusted = doc:ssl_trusted()
-                ntheme = snfg
-                if trusted == false or (trusted ~= nil and not w.checking_ssl) then
-                    ntheme = bfg
-                elseif trusted then
-                    ntheme = gfg
-                end
             end
 
             tabs[i] = {
@@ -723,7 +711,7 @@ function window.new(uris)
 
     -- Make sure something is loaded
     if w.tabs:count() == 0 then
-        w:new_tab(w:search_open(globals.homepage), false)
+        -- TODO: show something
     end
 
     -- Set initial mode
