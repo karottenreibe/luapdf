@@ -34,7 +34,6 @@ function window.build()
                 layout = hbox(),
                 ebox   = eventbox(),
                 uri    = label(),
-                hist   = label(),
             },
             -- Fills space between the left and right aligned widgets
             sep = eventbox(),
@@ -75,7 +74,6 @@ function window.build()
     -- Pack left-aligned statusbar elements
     local l = w.sbar.l
     l.layout:pack(l.uri)
-    l.layout:pack(l.hist)
     l.ebox.child = l.layout
 
     -- Pack right-aligned statusbar elements
@@ -107,7 +105,6 @@ function window.build()
     -- Other settings
     i.input.show_frame = false
     w.tabs.show_tabs = false
-    l.hist:hide()
     l.uri.selectable = true
 
     -- Allows indexing of window struct by window widget
@@ -130,10 +127,8 @@ window.init_funcs = {
             w:update_tab_count(idx)
             w:update_win_title(doc)
             w:update_uri(doc)
-            w:update_progress(doc)
             w:update_tablist(idx)
             w:update_buf()
-            w:update_hist(doc)
         end)
         w.tabs:add_signal("page-reordered", function (nbook, doc, idx)
             w:update_tab_count()
@@ -179,7 +174,6 @@ window.init_funcs = {
         -- Set foregrounds
         for wi, v in pairs({
             [s.l.uri]    = theme.uri_sbar_fg,
-            [s.l.hist]   = theme.hist_sbar_fg,
             [s.r.buf]    = theme.buf_sbar_fg,
             [s.r.tabi]   = theme.tabi_sbar_fg,
             [s.r.scroll] = theme.scroll_sbar_fg,
@@ -200,7 +194,6 @@ window.init_funcs = {
         -- Set fonts
         for wi, v in pairs({
             [s.l.uri]    = theme.uri_sbar_font,
-            [s.l.hist]   = theme.hist_sbar_font,
             [s.r.buf]    = theme.buf_sbar_font,
             [s.r.tabi]   = theme.tabi_sbar_font,
             [s.r.scroll] = theme.scroll_sbar_font,
@@ -234,7 +227,7 @@ window.methods = {
 
     get_tab_title = function (w, doc)
         if not doc then doc = w:get_current() end
-        return doc:get_property("title") or doc.uri or "(Untitled)"
+        return doc.uri or "(Untitled)"
     end,
 
     -- Wrapper around the bind plugin's hit method
@@ -430,8 +423,8 @@ window.methods = {
 
     update_win_title = function (w, doc)
         if not doc then doc = w:get_current() end
-        local uri, title = doc.uri, doc:get_property("title")
-        title = (title or "luapdf") .. ((uri and " - " .. uri) or "")
+        local uri = doc.uri
+        local title = (uri and uri .. " - " or "") .. "luapdf"
         local max = globals.max_title_len or 80
         if #title > max then title = string.sub(title, 1, max) .. "..." end
         w.win.title = title
@@ -465,19 +458,6 @@ window.methods = {
         end
     end,
 
-    update_hist = function (w, doc)
-        if not doc then doc = w:get_current() end
-        local hist = w.sbar.l.hist
-        local back, forward = doc:can_go_back(), doc:can_go_forward()
-        local s = (back and "+" or "") .. (forward and "-" or "")
-        if s ~= "" then
-            hist.text = '['..s..']'
-            hist:show()
-        else
-            hist:hide()
-        end
-    end,
-
     update_buf = function (w)
         local buf = w.sbar.r.buf
         if w.buffer then
@@ -506,10 +486,6 @@ window.methods = {
         for i, doc in ipairs(w.tabs.children) do
             -- Get tab number theme
             local ntheme = nfg
-            if doc:loading() then -- Show loading on all tabs
-                ntheme = lfg
-            end
-
             tabs[i] = {
                 title = string.format(tfmt, ntheme or fg, i, escape(get_title(w, doc))),
                 fg = (current == i and theme.tab_selected_fg) or fg,
@@ -556,8 +532,6 @@ window.methods = {
             w:new_tab("about:blank", false)
             w.has_blank = true
         end
-        -- Save tab history
-        local tab = {hist = doc.history,}
         -- And relative location
         local index = w.tabs:indexof(doc)
         if index ~= 1 then tab.after = w.tabs[index-1] end
