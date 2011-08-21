@@ -21,6 +21,7 @@ DESKTOP
 destination
 destroy
 dev_paths
+document
 DOCUMENTS
 DOWNLOAD
 elapsed_time
@@ -58,8 +59,9 @@ interval
 plugged
 label
 left
-loading
+load
 load_string
+loading
 maximize
 mime_type
 MUSIC
@@ -71,6 +73,7 @@ pack
 pack1
 pack2
 padding
+page
 pages
 password
 path

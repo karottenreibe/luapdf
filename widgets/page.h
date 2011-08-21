@@ -1,5 +1,5 @@
 /*
- * document.h - Poppler document class header
+ * widgets/page.h - Poppler page widget header
  *
  * Copyright © 2010 Fabian Streitel <karottenreibe@gmail.com>
  *
@@ -19,12 +19,13 @@
  *
  */
 
-#ifndef LUAKIT_CLIB_DOCUMENT_H
-#define LUAKIT_CLIB_DOCUMENT_H
+#ifndef LUAKIT_CLIB_PAGE_H
+#define LUAKIT_CLIB_PAGE_H
 
 #include <lua.h>
+#include <poppler.h>
 
-void document_class_setup(lua_State *);
+int luaH_page_new(lua_State *, PopplerDocument *, int);
 
 #endif
 

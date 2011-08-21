@@ -1,5 +1,5 @@
 /*
- * page.c - Poppler page class
+ * widgets/page.c - Poppler page widget
  *
  * Copyright © 2010 Fabian Streitel <karottenreibe@gmail.com>
  *
@@ -19,7 +19,7 @@
  *
  */
 
-#include "clib/page.h"
+#include "widgets/page.h"
 #include "luah.h"
 #include "clib/widget.h"
 #include "widgets/image.h"
@@ -49,13 +49,20 @@ luaH_page_gc(lua_State *L) {
 int
 luaH_page_new(lua_State *L, PopplerDocument *document, int index)
 {
+    /* push {type = "page"} to index 2 */
     lua_newtable(L);
+    lua_pushstring(L, "type");
+    lua_pushstring(L, "page");
+    lua_rawset(L, -3);
     lua_insert(L, 2);
-    luaH_class_new(L, &page_class);
+    /* call widget constructor and cleanup */
+    luaH_widget_new(L);
     lua_remove(L, 2);
-    lpage_t *page = luaH_checkpage(L, -1);
-    page->page = poppler_document_get_page(document, index);
-    page->widget_ref = NULL;
+    /* get widget and set properties */
+    page_data_t *d = luaH_checkpage_data(L, -1);
+    d->document = document;
+    d->index = index;
+    d->page = poppler_document_get_page(document, index);
     return 1;
 }
 

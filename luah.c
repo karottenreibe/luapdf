@@ -26,8 +26,6 @@
 #include "clib/widget.h"
 #include "clib/luapdf.h"
 #include "clib/unique.h"
-#include "clib/document.h"
-#include "clib/page.h"
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -376,12 +374,6 @@ luaH_init(void)
 
     /* Export timer */
     timer_class_setup(L);
-
-    /* Export document */
-    document_class_setup(L);
-
-    /* Export page */
-    page_class_setup(L);
 
     /* add Lua search paths */
     lua_getglobal(L, "package");
