@@ -33,7 +33,7 @@ function window.build()
             l = {
                 layout = hbox(),
                 ebox   = eventbox(),
-                uri    = label(),
+                path   = label(),
             },
             -- Fills space between the left and right aligned widgets
             sep = eventbox(),
@@ -73,7 +73,7 @@ function window.build()
 
     -- Pack left-aligned statusbar elements
     local l = w.sbar.l
-    l.layout:pack(l.uri)
+    l.layout:pack(l.path)
     l.ebox.child = l.layout
 
     -- Pack right-aligned statusbar elements
@@ -105,7 +105,7 @@ function window.build()
     -- Other settings
     i.input.show_frame = false
     w.tabs.show_tabs = false
-    l.uri.selectable = true
+    l.path.selectable = true
 
     -- Allows indexing of window struct by window widget
     window.bywidget[w.win] = w
@@ -126,7 +126,7 @@ window.init_funcs = {
             w:set_mode()
             w:update_tab_count(idx)
             w:update_win_title(doc)
-            w:update_uri(doc)
+            w:update_path(doc)
             w:update_tablist(idx)
             w:update_buf()
         end)
@@ -173,7 +173,7 @@ window.init_funcs = {
 
         -- Set foregrounds
         for wi, v in pairs({
-            [s.l.uri]    = theme.uri_sbar_fg,
+            [s.l.path]   = theme.path_sbar_fg,
             [s.r.buf]    = theme.buf_sbar_fg,
             [s.r.tabi]   = theme.tabi_sbar_fg,
             [s.r.scroll] = theme.scroll_sbar_fg,
@@ -193,7 +193,7 @@ window.init_funcs = {
 
         -- Set fonts
         for wi, v in pairs({
-            [s.l.uri]    = theme.uri_sbar_font,
+            [s.l.path]   = theme.path_sbar_font,
             [s.r.buf]    = theme.buf_sbar_font,
             [s.r.tabi]   = theme.tabi_sbar_font,
             [s.r.scroll] = theme.scroll_sbar_font,
@@ -227,7 +227,7 @@ window.methods = {
 
     get_tab_title = function (w, doc)
         if not doc then doc = w:get_current() end
-        return doc.uri or "(Untitled)"
+        return doc.title or "(Untitled)"
     end,
 
     -- Wrapper around the bind plugin's hit method
@@ -423,20 +423,20 @@ window.methods = {
 
     update_win_title = function (w, doc)
         if not doc then doc = w:get_current() end
-        local uri = doc.uri
-        local title = (uri and uri .. " - " or "") .. "luapdf"
+        local path = doc.path
+        local title = (doc.title or "(Untitled)") .. " - " .. (path or "luapdf")
         local max = globals.max_title_len or 80
         if #title > max then title = string.sub(title, 1, max) .. "..." end
         w.win.title = title
     end,
 
-    update_uri = function (w, doc, uri, link)
-        local u, escape = w.sbar.l.uri, lousy.util.escape
+    update_path = function (w, doc, path, link)
+        local u, escape = w.sbar.l.path, lousy.util.escape
         if link then
             u.text = "Link: " .. escape(link)
         else
             if not doc then doc = w:get_current() end
-            u.text = escape((uri or (doc and doc.uri) or "(no pdf)"))
+            u.text = escape((path or (doc and doc.path) or "(no pdf)"))
         end
     end,
 
@@ -583,16 +583,13 @@ window.methods = {
     end,
 
     -- Navigate current doc or open new tab
-    navigate = function (w, uri, doc)
+    -- TODO: giving a doc here won't work
+    navigate = function (w, path, doc)
         if not doc then doc = w:get_current() end
         if doc then
-            local js = string.match(uri, "^javascript:(.+)$")
-            if js then
-                return doc:eval_js(luapdf.uri_decode(js), "(javascript-uri)")
-            end
-            doc.uri = uri
+            doc.path = path
         else
-            return w:new_tab(uri)
+            return w:new_tab(path)
         end
     end,
 
@@ -650,7 +647,7 @@ window.indexes = {
 }
 
 -- Create new window
-function window.new(uris)
+function window.new(paths)
     local w = window.build()
 
     -- Set window metatable
@@ -676,8 +673,8 @@ function window.new(uris)
     end
 
     -- Populate notebook with tabs
-    for _, uri in ipairs(uris or {}) do
-        w:new_tab(uri, false)
+    for _, path in ipairs(paths or {}) do
+        w:new_tab(path, false)
     end
 
     -- Make sure something is loaded
