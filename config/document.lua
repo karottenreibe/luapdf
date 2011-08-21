@@ -118,8 +118,8 @@ function document.methods.scroll(doc, w, new)
     end
 end
 
-function document.new(w, uri, password)
-    local doc = clib.document{uri = uri, password = password}
+function document.new(w, path, password)
+    local doc = clib.document{path = path, password = password}
 
     doc.show_scrollbars = false
 

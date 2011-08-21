@@ -29,7 +29,7 @@
 typedef struct {
     LUA_OBJECT_HEADER
     PopplerDocument *document;
-    const gchar *uri;
+    const gchar *path;
     const gchar *password;
 } ldocument_t;
 
@@ -50,34 +50,31 @@ luaH_document_new(lua_State *L)
 {
     luaH_class_new(L, &document_class);
     ldocument_t *document = luaH_checkdocument(L, -1);
+    if (!document->path)
+        luaL_error(L, "no path given to document class");
     GError *error = NULL;
-    document->document = poppler_document_new_from_file(document->uri, document->password, &error);
-    if (error) {
-        lua_pushstring(L, error->message);
-        lua_error(L);
-    }
+    const gchar *uri = g_filename_to_uri(document->path, NULL, &error);
+    if (error)
+        luaL_error(L, error->message);
+    error = NULL;
+    document->document = poppler_document_new_from_file(uri, document->password, &error);
+    if (error)
+        luaL_error(L, error->message);
     return 1;
 }
 
 static int
-luaH_document_set_uri(lua_State *L, ldocument_t *document)
+luaH_document_set_path(lua_State *L, ldocument_t *document)
 {
-    const gchar *uri = luaL_checkstring(L, -1);
-    GError *error = NULL;
-    uri = g_filename_to_uri(uri, NULL, &error);
-    if (error) {
-        lua_pushstring(L, error->message);
-        lua_error(L);
-    } else {
-        document->uri = uri;
-    }
+    const gchar *path = luaL_checkstring(L, -1);
+    document->path = path;
     return 0;
 }
 
 static int
-luaH_document_get_uri(lua_State *L, ldocument_t *document)
+luaH_document_get_path(lua_State *L, ldocument_t *document)
 {
-    lua_pushstring(L, document->uri);
+    lua_pushstring(L, document->path);
     return 1;
 }
 
@@ -137,10 +134,10 @@ document_class_setup(lua_State *L)
             luaH_class_index_miss_property, luaH_class_newindex_miss_property,
             document_methods, document_meta);
 
-    luaH_class_add_property(&document_class, L_TK_URI,
-            (lua_class_propfunc_t) luaH_document_set_uri,
-            (lua_class_propfunc_t) luaH_document_get_uri,
-            (lua_class_propfunc_t) luaH_document_set_uri);
+    luaH_class_add_property(&document_class, L_TK_PATH,
+            (lua_class_propfunc_t) luaH_document_set_path,
+            (lua_class_propfunc_t) luaH_document_get_path,
+            (lua_class_propfunc_t) luaH_document_set_path);
 
     luaH_class_add_property(&document_class, L_TK_PAGES,
             NULL,

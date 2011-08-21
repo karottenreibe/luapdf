@@ -496,11 +496,11 @@ window.methods = {
         w.tablist:update(tabs, current)
     end,
 
-    new_tab = function (w, arg, switch, order)
+    new_tab = function (w, path, switch, order)
         local doc
         -- Make new page widget
         if not doc then
-            doc = document.new(w, arg)
+            doc = document.new(w, path)
             local p = 1
             local e = eventbox()
             local i = doc.pages[p].widget
