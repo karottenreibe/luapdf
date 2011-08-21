@@ -20,19 +20,17 @@
  */
 
 #include "luah.h"
-#include "widgets/common.h"
+#include "clib/widget.h"
 #include "widgets/page.h"
 
 #include <glib.h>
 #include <poppler.h>
 
-widget_constructor_t widget_eventbox;
-
 typedef struct {
     /* functions of the superclass */
-    widget_destructor_t *destructor;
-    gint (*index)(lua_State *, luapdf_token_t);
-    gint (*newindex)(lua_State *, luapdf_token_t);
+    widget_destructor_t *super_destructor;
+    gint (*super_index)(lua_State *, luapdf_token_t);
+    gint (*super_newindex)(lua_State *, luapdf_token_t);
     /* document data */
     PopplerDocument *document;
     const gchar *path;
@@ -59,8 +57,9 @@ luaH_checkdocument_data(lua_State *L, gint udx)
 static void
 luaH_document_destructor(widget_t *w) {
     document_data_t *d = w->data;
-    d->destructor(w);
-    g_free(d->document);
+    d->super_destructor(w);
+    if (d->document)
+        g_free(d->document);
     g_free(d);
 }
 
@@ -112,7 +111,7 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
         return luaH_document_push_pages(L, d);
 
       default:
-        return d->index(L, token);
+        return d->super_index(L, token);
     }
     return 0;
 }
@@ -139,7 +138,7 @@ luaH_document_newindex(lua_State *L, luapdf_token_t token)
         break;
 
       default:
-        return d->newindex(L, token);
+        return d->super_newindex(L, token);
     }
 
     return luaH_object_emit_property_signal(L, 1);
@@ -151,12 +150,12 @@ widget_document(widget_t *w, luapdf_token_t token)
     /* super constructor */
     widget_eventbox(w, token);
 
-    document_data_t *d = g_slice_new(document_data_t);
+    document_data_t *d = g_slice_new0(document_data_t);
     w->data = d;
 
-    d->index = w->index;
-    d->newindex = w->newindex;
-    d->destructor = w->destructor;
+    d->super_index = w->index;
+    d->super_newindex = w->newindex;
+    d->super_destructor = w->destructor;
 
     w->index = luaH_document_index;
     w->newindex = luaH_document_newindex;

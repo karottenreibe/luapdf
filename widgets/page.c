@@ -22,28 +22,37 @@
 #include "widgets/page.h"
 #include "luah.h"
 #include "clib/widget.h"
-#include "widgets/image.h"
+#include "widgets/common.h"
 
 #include <glib.h>
 
 typedef struct {
-    LUA_OBJECT_HEADER
+    /* functions of the superclass */
+    widget_destructor_t *super_destructor;
+    gint (*super_index)(lua_State *, luapdf_token_t);
+    gint (*super_newindex)(lua_State *, luapdf_token_t);
+    /* page data */
     PopplerPage *page;
-    gpointer widget_ref;
-} lpage_t;
+    int index;
+    PopplerDocument *document;
+} page_data_t;
 
-static lua_class_t page_class;
-LUA_OBJECT_FUNCS(page_class, lpage_t, page)
+static widget_t*
+luaH_checkpage(lua_State *L, gint udx)
+{
+    widget_t *w = luaH_checkwidget(L, udx);
+    if (w->info->tok != L_TK_DOCUMENT)
+        luaL_argerror(L, udx, "incorrect widget type (expected page)");
+    return w;
+}
 
-#define luaH_checkpage(L, idx) luaH_checkudata(L, idx, &(page_class))
-
-static int
-luaH_page_gc(lua_State *L) {
-    lpage_t *page = luaH_checkpage(L, -1);
-    if (page->widget_ref)
-        luaH_object_unref(L, page->widget_ref);
-    g_free(page->page);
-    return 0;
+static void
+luaH_page_destructor(widget_t *w) {
+    page_data_t *d = w->data;
+    widget_destructor(w);
+    if (d->page)
+        g_free(d->page);
+    g_free(d);
 }
 
 int
@@ -59,71 +68,57 @@ luaH_page_new(lua_State *L, PopplerDocument *document, int index)
     luaH_widget_new(L);
     lua_remove(L, 2);
     /* get widget and set properties */
-    page_data_t *d = luaH_checkpage_data(L, -1);
+    widget_t *w = luaH_checkpage(L, 1);
+    page_data_t *d = w->data;
     d->document = document;
     d->index = index;
     d->page = poppler_document_get_page(document, index);
+    /* render page to pixbuf */
+    PopplerPage *p = d->page;
+    double width, height;
+    poppler_page_get_size(p, &width, &height);
+    cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    cairo_t *c = cairo_create(s);
+    poppler_page_render(p, c);
+    int stride = cairo_image_surface_get_stride(s);
+    guchar *data = cairo_image_surface_get_data(s);
+    GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
+    /* render pixbuf to image widget */
+    gtk_image_set_from_pixbuf(GTK_IMAGE(w->widget), buf);
     return 1;
 }
 
-static int
-luaH_page_get_widget(lua_State *L, lpage_t *page)
+static gint
+luaH_page_index(lua_State *L, luapdf_token_t token)
 {
-    if (!page->widget_ref) {
-        /* create image widget */
-        lua_newtable(L);
-        lua_pushstring(L, "type");
-        lua_pushstring(L, "image");
-        lua_rawset(L, -3);
-        lua_insert(L, 2);
-        luaH_widget_new(L);
-        lua_remove(L, 2);
-        /* set contents */
-        PopplerPage *p = page->page;
-        double w, h;
-        poppler_page_get_size(p, &w, &h);
-        cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-        cairo_t *c = cairo_create(s);
-        poppler_page_render(p, c);
-        int stride = cairo_image_surface_get_stride(s);
-        guchar *data = cairo_image_surface_get_data(s);
-        GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, w, h, stride, NULL, NULL);
-        luaH_image_set_pixbuf(L, buf);
-        /* ref it */
-        page->widget_ref = luaH_object_ref(L, -1);
+    switch(token)
+    {
+      LUAKIT_WIDGET_INDEX_COMMON
+
+      default:
+        break;
     }
-    luaH_object_push(L, page->widget_ref);
-    return 1;
+    return 0;
 }
 
-void
-page_class_setup(lua_State *L)
+widget_t *
+widget_page(widget_t *w, luapdf_token_t UNUSED(token))
 {
-    static const struct luaL_reg page_methods[] =
-    {
-        LUA_CLASS_METHODS(page)
-        { NULL, NULL }
-    };
+    w->index = luaH_page_index;
+    w->newindex = NULL;
+    w->destructor = luaH_page_destructor;
 
-    static const struct luaL_reg page_meta[] =
-    {
-        LUA_OBJECT_META(page)
-        LUA_CLASS_META
-        { "__gc", luaH_page_gc },
-        { NULL, NULL },
-    };
+    /* create gtk image widget as main widget */
+    w->widget = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
+    g_object_set_data(G_OBJECT(w->widget), "lua_widget", (gpointer) w);
 
-    luaH_class_setup(L, &page_class, "page",
-            (lua_class_allocator_t) page_new,
-            luaH_class_index_miss_property, luaH_class_newindex_miss_property,
-            page_methods, page_meta);
+    gtk_widget_show(w->widget);
 
-    luaH_class_add_property(&page_class, L_TK_WIDGET,
-            NULL,
-            (lua_class_propfunc_t) luaH_page_get_widget,
-            NULL);
+    /* create data struct */
+    page_data_t *d = g_slice_new0(page_data_t);
+    w->data = d;
+
+    return w;
 }
-
-#undef luaH_checkpage
 
 // vim: ft=c:et:sw=4:ts=8:sts=4:tw=80

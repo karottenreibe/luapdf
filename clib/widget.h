@@ -42,7 +42,6 @@ widget_constructor_t widget_notebook;
 widget_constructor_t widget_paned;
 widget_constructor_t widget_window;
 widget_constructor_t widget_socket;
-widget_constructor_t widget_image;
 widget_constructor_t widget_document;
 widget_constructor_t widget_page;
 
