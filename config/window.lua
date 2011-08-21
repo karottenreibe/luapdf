@@ -436,7 +436,7 @@ window.methods = {
             u.text = "Link: " .. escape(link)
         else
             if not doc then doc = w:get_current() end
-            u.text = escape((uri or (doc and doc.uri) or "about:blank"))
+            u.text = escape((uri or (doc and doc.uri) or "(no pdf)"))
         end
     end,
 
@@ -479,7 +479,6 @@ window.methods = {
     update_tablist = function (w, current)
         local current = current or w.tabs:current()
         local fg, bg, nfg, snfg = theme.tab_fg, theme.tab_bg, theme.tab_ntheme, theme.selected_ntheme
-        local lfg, bfg, gfg = theme.tab_loading_fg, theme.tab_notrust_fg, theme.tab_trust_fg
         local escape, get_title = lousy.util.escape, w.get_tab_title
         local tabs, tfmt = {}, ' <span foreground="%s">%s</span> %s'
 
@@ -499,22 +498,24 @@ window.methods = {
 
     new_tab = function (w, arg, switch, order)
         local doc
-        -- Use blank tab first
-        if w.has_blank and w.tabs:count() == 1 and w.tabs[1].uri == "about:blank" then
-            doc = w.tabs[1]
-        end
-        w.has_blank = nil
         -- Make new page widget
         if not doc then
             doc = document.new(w, arg)
+            local p = 1
+            local e = eventbox()
+            local i = doc.pages[p].widget
+            e.child = i
+            e.bg = "#fff"
+            doc.current = {
+                page = p,
+                image = i,
+                ebox = e,
+            }
             -- Get tab order function
             if not order and taborder then
                 order = (switch == false and taborder.default_bg)
                     or taborder.default
             end
-            local e = eventbox()
-            e.child = doc.pages[1].widget
-            e.bg = "#fff"
             pos = w.tabs:insert((order and order(w, doc)) or -1, e)
             if switch ~= false then w.tabs:switch(pos) end
         end
@@ -527,12 +528,8 @@ window.methods = {
     -- close the current tab
     close_tab = function (w, doc, blank_last)
         doc = doc or w:get_current()
-        -- Treat a blank last tab as an empty notebook (if blank_last=true)
-        if blank_last ~= false and w.tabs:count() == 1 then
-            if not doc:loading() and doc.uri == "about:blank" then return end
-            w:new_tab("about:blank", false)
-            w.has_blank = true
-        end
+        -- Do nothing if no doc open
+        if not doc then return end
         -- And relative location
         local index = w.tabs:indexof(doc)
         if index ~= 1 then tab.after = w.tabs[index-1] end
