@@ -512,9 +512,10 @@ window.methods = {
                 order = (switch == false and taborder.default_bg)
                     or taborder.default
             end
-            local p = doc.pages[1]
-            p = p.widget
-            pos = w.tabs:insert((order and order(w, doc)) or -1, doc.pages[1].widget)
+            local e = eventbox()
+            e.child = doc.pages[1].widget
+            e.bg = "#fff"
+            pos = w.tabs:insert((order and order(w, doc)) or -1, e)
             if switch ~= false then w.tabs:switch(pos) end
         end
         -- Update statusbar widgets
