@@ -32,8 +32,9 @@ typedef struct {
     gint (*super_newindex)(lua_State *, luapdf_token_t);
     /* page data */
     PopplerPage *page;
-    int index;
+    gint index;
     PopplerDocument *document;
+    gboolean rendered;
 } page_data_t;
 
 static widget_t*
@@ -73,18 +74,6 @@ luaH_page_new(lua_State *L, PopplerDocument *document, int index)
     d->document = document;
     d->index = index;
     d->page = poppler_document_get_page(document, index);
-    /* render page to pixbuf */
-    PopplerPage *p = d->page;
-    double width, height;
-    poppler_page_get_size(p, &width, &height);
-    cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    cairo_t *c = cairo_create(s);
-    poppler_page_render(p, c);
-    int stride = cairo_image_surface_get_stride(s);
-    guchar *data = cairo_image_surface_get_data(s);
-    GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
-    /* render pixbuf to image widget */
-    gtk_image_set_from_pixbuf(GTK_IMAGE(w->widget), buf);
     return 1;
 }
 
@@ -108,6 +97,27 @@ luaH_page_index(lua_State *L, luapdf_token_t token)
     return 0;
 }
 
+static void
+realize_cb(GtkWidget *wi, widget_t *w)
+{
+    page_data_t *d = w->data;
+    if (!d->rendered) {
+        /* render page to pixbuf */
+        PopplerPage *p = d->page;
+        double width, height;
+        poppler_page_get_size(p, &width, &height);
+        cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+        cairo_t *c = cairo_create(s);
+        poppler_page_render(p, c);
+        int stride = cairo_image_surface_get_stride(s);
+        guchar *data = cairo_image_surface_get_data(s);
+        GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
+        /* render pixbuf to image widget */
+        gtk_image_set_from_pixbuf(GTK_IMAGE(w->widget), buf);
+        d->rendered = TRUE;
+    }
+}
+
 widget_t *
 widget_page(widget_t *w, luapdf_token_t UNUSED(token))
 {
@@ -118,6 +128,10 @@ widget_page(widget_t *w, luapdf_token_t UNUSED(token))
     /* create gtk image widget as main widget */
     w->widget = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     g_object_set_data(G_OBJECT(w->widget), "lua_widget", (gpointer) w);
+
+    g_object_connect(G_OBJECT(w->widget),
+      "signal::realize",              G_CALLBACK(realize_cb),    w,
+      NULL);
 
     gtk_widget_show(w->widget);
 
