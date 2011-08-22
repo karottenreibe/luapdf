@@ -2,11 +2,6 @@
 -- Poppler Document class --
 ----------------------------
 
--- preserve PopplerDocument wrapper class locally
-local clib = {
-    document = document,
-}
-
 -- Document class table
 document = {}
 
@@ -119,7 +114,10 @@ function document.methods.scroll(doc, w, new)
 end
 
 function document.new(w, path, password)
-    local doc = clib.document{path = path, password = password}
+    local doc = widget{type = "document"}
+    doc.path = path
+    doc.password = password
+    doc:load()
 
     doc.show_scrollbars = false
 

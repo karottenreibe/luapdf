@@ -41,7 +41,7 @@ static widget_t*
 luaH_checkpage(lua_State *L, gint udx)
 {
     widget_t *w = luaH_checkwidget(L, udx);
-    if (w->info->tok != L_TK_DOCUMENT)
+    if (w->info->tok != L_TK_PAGE)
         luaL_argerror(L, udx, "incorrect widget type (expected page)");
     return w;
 }
@@ -50,9 +50,10 @@ static void
 luaH_page_destructor(widget_t *w) {
     page_data_t *d = w->data;
     widget_destructor(w);
+    /* release our reference on the page. Poppler handles freeing it */
     if (d->page)
-        g_free(d->page);
-    g_free(d);
+        g_object_unref(d->page);
+    g_slice_free(page_data_t, d);
 }
 
 int
@@ -68,7 +69,7 @@ luaH_page_new(lua_State *L, PopplerDocument *document, int index)
     luaH_widget_new(L);
     lua_remove(L, 2);
     /* get widget and set properties */
-    widget_t *w = luaH_checkpage(L, 1);
+    widget_t *w = luaH_checkpage(L, -1);
     page_data_t *d = w->data;
     d->document = document;
     d->index = index;

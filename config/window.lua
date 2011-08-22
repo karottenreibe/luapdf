@@ -497,28 +497,18 @@ window.methods = {
     end,
 
     new_tab = function (w, path, switch, order)
-        local doc
-        -- Make new page widget
-        if not doc then
-            doc = document.new(w, path)
-            local p = 1
-            local e = eventbox()
-            local i = doc.pages[p].widget
-            e.child = i
-            e.bg = "#fff"
-            doc.current = {
-                page = p,
-                image = i,
-                ebox = e,
-            }
-            -- Get tab order function
-            if not order and taborder then
-                order = (switch == false and taborder.default_bg)
-                    or taborder.default
-            end
-            pos = w.tabs:insert((order and order(w, doc)) or -1, e)
-            if switch ~= false then w.tabs:switch(pos) end
+        local doc = document.new(w, path)
+        local n = 1
+        local p = doc.pages[n]
+        doc.current = n
+        doc.child = p
+        -- Get tab order function
+        if not order and taborder then
+            order = (switch == false and taborder.default_bg)
+                or taborder.default
         end
+        pos = w.tabs:insert((order and order(w, doc)) or -1, doc)
+        if switch ~= false then w.tabs:switch(pos) end
         -- Update statusbar widgets
         w:update_tab_count()
         w:update_tablist()

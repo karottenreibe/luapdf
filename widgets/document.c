@@ -58,9 +58,10 @@ static void
 luaH_document_destructor(widget_t *w) {
     document_data_t *d = w->data;
     d->super_destructor(w);
+    /* release our reference on the document. Poppler handles freeing it */
     if (d->document)
-        g_free(d->document);
-    g_free(d);
+        g_object_unref(d->document);
+    g_slice_free(document_data_t, d);
 }
 
 static int
