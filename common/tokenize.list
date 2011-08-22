@@ -44,6 +44,7 @@ get_special_dir
 get_title
 go_back
 go_forward
+goto
 hbox
 hide
 history

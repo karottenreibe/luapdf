@@ -9,7 +9,7 @@ document = {}
 document.init_funcs = {
     -- Update history indicator
     hist_update = function (doc, w)
-        doc.doc:add_signal("load-status", function (v, status)
+        doc:add_signal("load-status", function (v, status)
             if w:is_current(v) then
                 w:update_hist(v)
             end
@@ -18,7 +18,7 @@ document.init_funcs = {
 
     -- Update tab titles
     tablist_update = function (doc, w)
-        doc.doc:add_signal("load-status", function (v, status)
+        doc:add_signal("load-status", function (v, status)
             if status == "provisional" or status == "finished" or status == "failed" then
                 w:update_tablist()
             end
@@ -27,7 +27,7 @@ document.init_funcs = {
 
     -- Update scroll widget
     scroll_update = function (doc, w)
-        doc.doc:add_signal("expose", function (v)
+        doc:add_signal("expose", function (v)
             if w:is_current(v) then
                 w:update_scroll(v)
             end
@@ -36,7 +36,7 @@ document.init_funcs = {
 
     -- Catch keys in non-passthrough modes
     mode_key_filter = function (doc, w)
-        doc.doc:add_signal("key-press", function ()
+        doc:add_signal("key-press", function ()
             if not w.mode.passthrough then
                 return true
             end
@@ -46,7 +46,7 @@ document.init_funcs = {
     -- Try to match a button event to a user's button binding else let the
     -- press hit the document.
     button_bind_match = function (doc, w)
-        doc.doc:add_signal("button-release", function (v, mods, button, context)
+        doc:add_signal("button-release", function (v, mods, button, context)
             (w.search_state or {}).marker = nil
             if w:hit(mods, button, { context = context }) then
                 return true
@@ -68,6 +68,10 @@ document.methods = {
 
     set = function (doc, w, k, v)
         doc:set_property(k, v)
+    end,
+
+    goto = function (doc, w, n)
+        doc:goto(doc.pages[n])
     end,
 }
 
@@ -114,19 +118,10 @@ function document.methods.scroll(doc, w, new)
 end
 
 function document.new(w, path, password)
-    local doc = widget{type = "document"}
-    doc.path = path
-    doc.password = password
-    doc:load()
-
-    -- Wrap document in Lua table
-    local d = setmetatable({doc = doc}, {
-        __index = function (_, k)
-            -- Check widget structure first
-            local v = doc[k]
-            if v then return v end
-        end
-    })
+    local d = widget{type = "document"}
+    d.path = path
+    d.password = password
+    d:load()
 
     -- Call document init functions
     for k, func in pairs(document.init_funcs) do

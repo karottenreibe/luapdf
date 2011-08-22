@@ -138,9 +138,9 @@ add_binds("normal", {
     key({},          "Up",          function (w) w:scroll{ y = less    } end),
     key({},          "Left",        function (w) w:scroll{ x = less    } end),
     key({},          "Right",       function (w) w:scroll{ x = more    } end),
-    key({},          "Page_Down",   function (w) w:scroll{ y = "+1.0p" } end),
-    key({},          "Page_Up",     function (w) w:scroll{ y = "-1.0p" } end),
-    key({},          "Home",        function (w) w:scroll{ y = "0%"    } end),
+    key({},          "Page_Down",   function (w) w:goto(w:get_current().current + 1) end),
+    key({},          "Page_Up",     function (w) w:goto(w:get_current().current - 1) end),
+    key({},          "Home",        function (w) w:goto(1) end),
     key({},          "End",         function (w) w:scroll{ y = "100%"  } end),
     key({},          "$",           function (w) w:scroll{ x = "100%"  } end),
     key({},          "0",           function (w, m)

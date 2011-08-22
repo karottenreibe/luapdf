@@ -21,7 +21,6 @@
 
 #include "widgets/page.h"
 #include "luah.h"
-#include "clib/widget.h"
 #include "widgets/common.h"
 
 #include <glib.h>
@@ -56,7 +55,7 @@ luaH_page_destructor(widget_t *w) {
     g_slice_free(page_data_t, d);
 }
 
-int
+gint
 luaH_page_new(lua_State *L, PopplerDocument *document, int index)
 {
     /* push {type = "page"} to index 2 */
@@ -87,6 +86,13 @@ luaH_page_new(lua_State *L, PopplerDocument *document, int index)
     /* render pixbuf to image widget */
     gtk_image_set_from_pixbuf(GTK_IMAGE(w->widget), buf);
     return 1;
+}
+
+gint
+page_get_index(widget_t *w)
+{
+    page_data_t *d = w->data;
+    return poppler_page_get_index(d->page);
 }
 
 static gint

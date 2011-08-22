@@ -23,7 +23,7 @@
 #include "clib/widget.h"
 #include "widgets/page.h"
 
-#include <glib.h>
+#include <gtk/gtk.h>
 #include <poppler.h>
 
 typedef struct {
@@ -35,6 +35,7 @@ typedef struct {
     PopplerDocument *document;
     const gchar *path;
     const gchar *password;
+    int current;
 } document_data_t;
 
 static widget_t*
@@ -82,6 +83,23 @@ luaH_document_load(lua_State *L)
 }
 
 static int
+luaH_document_goto(lua_State *L)
+{
+    widget_t *w = luaH_checkdocument(L, 1);
+    widget_t *p = luaH_checkwidget(L, 2);
+    /* remove old child */
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(w->widget));
+    if (child) {
+        g_object_ref(G_OBJECT(child));
+        gtk_container_remove(GTK_CONTAINER(w->widget), GTK_WIDGET(child));
+    }
+    gtk_container_add(GTK_CONTAINER(w->widget), p->widget);
+    document_data_t *d = w->data;
+    d->current = page_get_index(p);
+    return 0;
+}
+
+static int
 luaH_document_push_pages(lua_State *L, document_data_t *d)
 {
     lua_newtable(L);
@@ -103,10 +121,14 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
     {
       /* functions */
       PF_CASE(LOAD,     luaH_document_load)
+      PF_CASE(GOTO,     luaH_document_goto)
 
       /* strings */
       PS_CASE(PATH,     d->path);
       PS_CASE(PASSWORD, d->password);
+
+      /* integers */
+      PI_CASE(CURRENT,  d->current + 1);
 
       case L_TK_PAGES:
         return luaH_document_push_pages(L, d);

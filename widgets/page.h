@@ -25,7 +25,11 @@
 #include <lua.h>
 #include <poppler.h>
 
+#include "clib/widget.h"
+
 int luaH_page_new(lua_State *, PopplerDocument *, int);
+
+gint page_get_index(widget_t *w);
 
 #endif
 

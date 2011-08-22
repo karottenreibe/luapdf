@@ -498,17 +498,14 @@ window.methods = {
 
     new_tab = function (w, path, switch, order)
         local doc = document.new(w, path)
-        doc.doc.bg = theme.document_bg
-        local n = 1
-        local p = doc.pages[n]
-        doc.current = n
-        doc.doc.child = p
+        doc.bg = theme.document_bg
         -- Get tab order function
         if not order and taborder then
             order = (switch == false and taborder.default_bg)
                 or taborder.default
         end
-        pos = w.tabs:insert((order and order(w, doc)) or -1, doc.doc)
+        pos = w.tabs:insert((order and order(w, doc)) or -1, doc)
+        w:goto(1)
         if switch ~= false then w.tabs:switch(pos) end
         -- Update statusbar widgets
         w:update_tab_count()
