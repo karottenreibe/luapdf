@@ -130,8 +130,8 @@ add_binds("normal", {
     key({},          "BackSpace",   function (w) w:scroll{ y = "-1.0p" } end),
 
     -- Specific scroll
-    buf("^gg$",                     function (w, b, m) w:scroll{ y = m.count.."%" } end, {count = 0}),
-    buf("^G$",                      function (w, b, m) w:scroll{ y = m.count.."%" } end, {count = 100}),
+    buf("^gg$",                     function (w, b, m) w:goto(m.count) end, {count = 1}),
+    buf("^G$",                      function (w, b, m) w:goto(m.count) end, {count = -1}),
 
     -- Traditional scrolling commands
     key({},          "Down",        function (w) w:scroll{ y = more    } end),
@@ -141,7 +141,7 @@ add_binds("normal", {
     key({},          "Page_Down",   function (w) w:goto(w:get_current().current + 1) end),
     key({},          "Page_Up",     function (w) w:goto(w:get_current().current - 1) end),
     key({},          "Home",        function (w) w:goto(1) end),
-    key({},          "End",         function (w) w:goto(#(w:get_current().pages)) end),
+    key({},          "End",         function (w) w:goto(-1) end),
     key({},          "$",           function (w) w:scroll{ x = "100%"  } end),
     key({},          "0",           function (w, m)
                                         if not m.count then w:scroll{ y = "0%" } else return false end
