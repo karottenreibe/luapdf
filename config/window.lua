@@ -518,6 +518,8 @@ window.methods = {
         doc = doc or w:get_current()
         -- Do nothing if no doc open
         if not doc then return end
+        -- Save tab history
+        local tab = {path = doc.path, page = doc.current}
         -- And relative location
         local index = w.tabs:indexof(doc)
         if index ~= 1 then tab.after = w.tabs[index-1] end
