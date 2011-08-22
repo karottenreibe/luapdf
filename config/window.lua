@@ -507,7 +507,7 @@ window.methods = {
                 or taborder.default
         end
         pos = w.tabs:insert((order and order(w, doc)) or -1, doc)
-        doc:goto(doc.pages[1])
+        doc:goto(doc.pages[opts.page or 1])
         if opts.switch ~= false then w.tabs:switch(pos) end
         -- Update statusbar widgets
         w:update_tab_count()

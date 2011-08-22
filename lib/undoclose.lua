@@ -12,13 +12,13 @@ window.methods.undo_close_tab = function (w, index)
     end
     local tab = table.remove(w.closed_tabs, index)
     if not tab then return end
-    local view = w:new_tab(tab.path, {password = tab.password, page = tab.page})
+    local doc = w:new_tab(tab.path, {password = tab.password, page = tab.page})
     -- Attempt to open in last position
     if tab.after then
         local i = w.tabs:indexof(tab.after)
-        w.tabs:reorder(view, (i and i+1) or -1)
+        w.tabs:reorder(doc, (i and i+1) or -1)
     else
-        w.tabs:reorder(view, 1)
+        w.tabs:reorder(doc, 1)
     end
 end
 
@@ -109,7 +109,7 @@ add_binds("undolist", lousy.util.table.join({
 
 }, menu_binds))
 
--- Add `:undolist` command to view all closed tabs in an interactive menu
+-- Add `:undolist` command to doc all closed tabs in an interactive menu
 local cmd = lousy.bind.cmd
 add_cmds({
     cmd("undolist", function (w, a)
