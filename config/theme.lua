@@ -9,6 +9,9 @@ theme.font = "monospace normal 9"
 theme.fg   = "#fff"
 theme.bg   = "#000"
 
+-- PDF colours
+theme.document_bg = "#fff"
+
 -- Genaral colours
 theme.success_fg = "#0f0"
 theme.loaded_fg  = "#33AADD"

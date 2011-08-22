@@ -498,6 +498,7 @@ window.methods = {
 
     new_tab = function (w, path, switch, order)
         local doc = document.new(w, path)
+        doc.doc.bg = theme.document_bg
         local n = 1
         local p = doc.pages[n]
         doc.current = n
