@@ -71,6 +71,8 @@ document.methods = {
     end,
 
     goto = function (doc, w, n)
+        if n < 1 then return end
+        if n > #doc.pages then return end
         doc:goto(doc.pages[n])
     end,
 }

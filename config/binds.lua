@@ -141,7 +141,7 @@ add_binds("normal", {
     key({},          "Page_Down",   function (w) w:goto(w:get_current().current + 1) end),
     key({},          "Page_Up",     function (w) w:goto(w:get_current().current - 1) end),
     key({},          "Home",        function (w) w:goto(1) end),
-    key({},          "End",         function (w) w:scroll{ y = "100%"  } end),
+    key({},          "End",         function (w) w:goto(#(w:get_current().pages)) end),
     key({},          "$",           function (w) w:scroll{ x = "100%"  } end),
     key({},          "0",           function (w, m)
                                         if not m.count then w:scroll{ y = "0%" } else return false end
