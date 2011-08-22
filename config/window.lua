@@ -444,13 +444,7 @@ window.methods = {
         if not doc then doc = w:get_current() end
         local label = w.sbar.r.scroll
         if doc then
-            local scroll = doc.scroll
-            local y, max, text = scroll.y, scroll.ymax
-            if     max == 0   then text = "All"
-            elseif y   == 0   then text = "Top"
-            elseif y   == max then text = "Bot"
-            else text = string.format("%2d%%", (y / max) * 100)
-            end
+            local text = string.format("%s/%s", doc.current, #doc.pages)
             if label.text ~= text then label.text = text end
             label:show()
         else
@@ -510,6 +504,7 @@ window.methods = {
         doc:goto(doc.pages[opts.page or 1])
         if opts.switch ~= false then w.tabs:switch(pos) end
         -- Update statusbar widgets
+        w:update_scroll(doc)
         w:update_tab_count()
         w:update_tablist()
         return doc

@@ -75,6 +75,7 @@ document.methods = {
         if n < 1 then return end
         if n > #doc.pages then return end
         doc:goto(doc.pages[n])
+        w:update_scroll()
     end,
 }
 
