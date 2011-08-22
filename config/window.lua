@@ -501,13 +501,13 @@ window.methods = {
         local n = 1
         local p = doc.pages[n]
         doc.current = n
-        doc.child = p
+        doc.doc.child = p
         -- Get tab order function
         if not order and taborder then
             order = (switch == false and taborder.default_bg)
                 or taborder.default
         end
-        pos = w.tabs:insert((order and order(w, doc)) or -1, doc)
+        pos = w.tabs:insert((order and order(w, doc)) or -1, doc.doc)
         if switch ~= false then w.tabs:switch(pos) end
         -- Update statusbar widgets
         w:update_tab_count()
