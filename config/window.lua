@@ -496,17 +496,19 @@ window.methods = {
         w.tablist:update(tabs, current)
     end,
 
-    new_tab = function (w, path, switch, order)
-        local doc = document.new(w, path)
+    new_tab = function (w, path, opts)
+        opts = opts or {}
+        local doc = document.new(w, path, opts.password)
         doc.bg = theme.document_bg
         -- Get tab order function
+        local order = opts.order
         if not order and taborder then
-            order = (switch == false and taborder.default_bg)
+            order = (opts.switch == false and taborder.default_bg)
                 or taborder.default
         end
         pos = w.tabs:insert((order and order(w, doc)) or -1, doc)
-        w:goto(1)
-        if switch ~= false then w.tabs:switch(pos) end
+        doc:goto(doc.pages[1])
+        if opts.switch ~= false then w.tabs:switch(pos) end
         -- Update statusbar widgets
         w:update_tab_count()
         w:update_tablist()
@@ -519,7 +521,11 @@ window.methods = {
         -- Do nothing if no doc open
         if not doc then return end
         -- Save tab history
-        local tab = {path = doc.path, page = doc.current}
+        local tab = {
+            path = doc.path,
+            password = doc.password,
+            page = doc.current,
+        }
         -- And relative location
         local index = w.tabs:indexof(doc)
         if index ~= 1 then tab.after = w.tabs[index-1] end
@@ -664,7 +670,7 @@ function window.new(paths)
 
     -- Populate notebook with tabs
     for _, path in ipairs(paths or {}) do
-        w:new_tab(path, false)
+        w:new_tab(path, {switch = false})
     end
 
     -- Make sure something is loaded

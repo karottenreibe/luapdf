@@ -12,7 +12,7 @@ window.methods.undo_close_tab = function (w, index)
     end
     local tab = table.remove(w.closed_tabs, index)
     if not tab then return end
-    local view = w:new_tab(tab.hist)
+    local view = w:new_tab(tab.path, {password = tab.password, page = tab.page})
     -- Attempt to open in last position
     if tab.after then
         local i = w.tabs:indexof(tab.after)
@@ -69,7 +69,7 @@ add_binds("undolist", lousy.util.table.join({
         if row and row.uid then
             for i, tab in ipairs(w.closed_tabs) do
                 if tab.uid == row.uid then
-                    w:new_tab(table.remove(w.closed_tabs, i).hist, false)
+                    w:new_tab(table.remove(w.closed_tabs, i).hist, {switch = false})
                     break
                 end
             end

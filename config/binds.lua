@@ -65,7 +65,7 @@ add_binds("all", {
             -- Open hovered uri in new tab
             local uri = w:get_current().hovered_uri
             if uri then
-                w:new_tab(uri, false)
+                w:new_tab(uri, {switch = false})
             else -- Open selection in current tab
                 uri = luapdf.selection.primary
                 if uri then w:navigate(uri) end
@@ -77,7 +77,7 @@ add_binds("all", {
     but({"Control"}, 1, function (w, m)
         local uri = w:get_current().hovered_uri
         if uri then
-            w:new_tab(uri, false)
+            w:new_tab(uri, {switch = false})
         end
     end),
 

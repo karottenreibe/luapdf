@@ -85,7 +85,7 @@ require "completion"
 local w = (session and session.restore())
 if w then
     for i, uri in ipairs(uris) do
-        w:new_tab(uri, i == 1)
+        w:new_tab(uri, {switch = (i == 1)})
     end
 else
     -- Or open new window
