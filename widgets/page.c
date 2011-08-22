@@ -35,6 +35,7 @@ typedef struct {
     gint index;
     PopplerDocument *document;
     gboolean rendered;
+    gdouble zoom;
 } page_data_t;
 
 static widget_t*
@@ -44,6 +45,14 @@ luaH_checkpage(lua_State *L, gint udx)
     if (w->info->tok != L_TK_PAGE)
         luaL_argerror(L, udx, "incorrect widget type (expected page)");
     return w;
+}
+
+static page_data_t*
+luaH_checkpage_data(lua_State *L, gint udx)
+{
+    widget_t *w = luaH_checkpage(L, udx);
+    page_data_t *d = w->data;
+    return d;
 }
 
 static void
@@ -87,9 +96,14 @@ page_get_index(widget_t *w)
 static gint
 luaH_page_index(lua_State *L, luapdf_token_t token)
 {
+    page_data_t *d = luaH_checkpage_data(L, 1);
+
     switch(token)
     {
       LUAKIT_WIDGET_INDEX_COMMON
+
+      /* number properties */
+      PN_CASE(ZOOM,     d->zoom);
 
       default:
         break;
@@ -97,19 +111,46 @@ luaH_page_index(lua_State *L, luapdf_token_t token)
     return 0;
 }
 
+static gint
+luaH_page_newindex(lua_State *L, luapdf_token_t token)
+{
+    page_data_t *d = luaH_checkpage_data(L, 1);
+    double tmp;
+
+    switch(token)
+    {
+      case L_TK_ZOOM:
+        tmp = luaL_checknumber(L, 3);
+        if (d->zoom != tmp) {
+            d->zoom = tmp;
+            d->rendered = FALSE;
+        }
+        break;
+
+      default:
+        return d->super_newindex(L, token);
+    }
+
+    return luaH_object_emit_property_signal(L, 1);
+}
+
 static void
-realize_cb(GtkWidget *wi, widget_t *w)
+realize_cb(GtkWidget * UNUSED(wi), widget_t *w)
 {
     page_data_t *d = w->data;
     if (!d->rendered) {
+        gdouble zoom = d->zoom;
         /* render page to pixbuf */
         PopplerPage *p = d->page;
-        double width, height;
+        gdouble width, height;
         poppler_page_get_size(p, &width, &height);
+        width *= zoom;
+        height *= zoom;
         cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
         cairo_t *c = cairo_create(s);
+        cairo_scale(c, zoom, zoom);
         poppler_page_render(p, c);
-        int stride = cairo_image_surface_get_stride(s);
+        gint stride = cairo_image_surface_get_stride(s);
         guchar *data = cairo_image_surface_get_data(s);
         GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
         /* render pixbuf to image widget */
@@ -122,7 +163,7 @@ widget_t *
 widget_page(widget_t *w, luapdf_token_t UNUSED(token))
 {
     w->index = luaH_page_index;
-    w->newindex = NULL;
+    w->newindex = luaH_page_newindex;
     w->destructor = luaH_page_destructor;
 
     /* create gtk image widget as main widget */
@@ -137,6 +178,7 @@ widget_page(widget_t *w, luapdf_token_t UNUSED(token))
 
     /* create data struct */
     page_data_t *d = g_slice_new0(page_data_t);
+    d->zoom = 1.0;
     w->data = d;
 
     return w;

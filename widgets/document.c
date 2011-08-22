@@ -36,6 +36,7 @@ typedef struct {
     const gchar *path;
     const gchar *password;
     int current;
+    gpointer pages_ref;
 } document_data_t;
 
 static widget_t*
@@ -102,13 +103,17 @@ luaH_document_goto(lua_State *L)
 static int
 luaH_document_push_pages(lua_State *L, document_data_t *d)
 {
-    lua_newtable(L);
-    PopplerDocument *doc = d->document;
-    int n = poppler_document_get_n_pages(doc);
-    for (int i = 0; i < n; ++i) {
-        luaH_page_new(L, doc, i);
-        lua_rawseti(L, -2, i + 1);
+    if (!d->pages_ref) {
+        lua_newtable(L);
+        PopplerDocument *doc = d->document;
+        int n = poppler_document_get_n_pages(doc);
+        for (int i = 0; i < n; ++i) {
+            luaH_page_new(L, doc, i);
+            lua_rawseti(L, -2, i + 1);
+        }
+        d->pages_ref = luaH_object_ref(L, -1);
     }
+    luaH_object_push(L, d->pages_ref);
     return 1;
 }
 
