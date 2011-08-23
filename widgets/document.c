@@ -37,6 +37,8 @@ typedef struct {
     const gchar *password;
     int current;
     gpointer pages_ref;
+    GPtrArray *pages;
+    cairo_t *context;
 } document_data_t;
 
 static widget_t*
@@ -62,7 +64,13 @@ luaH_document_destructor(widget_t *w) {
     d->super_destructor(w);
     /* release our reference on the document. Poppler handles freeing it */
     if (d->document)
-        g_object_unref(d->document);
+        g_object_unref(G_OBJECT(d->document));
+    /* release our references on the pages. Poppler handles freeing it */
+    if (d->pages) {
+        for (guint i = 0; i < d->pages->len; ++i)
+            g_object_unref(G_OBJECT(g_ptr_array_index(d->pages, i)));
+        g_ptr_array_free(d->pages, TRUE);
+    }
     g_slice_free(document_data_t, d);
 }
 
@@ -80,6 +88,31 @@ luaH_document_load(lua_State *L)
     d->document = poppler_document_new_from_file(uri, d->password, &error);
     if (error)
         luaL_error(L, error->message);
+
+    /* extract pages */
+    const gint size = poppler_document_get_n_pages(d->document);
+    d->pages = g_ptr_array_sized_new(size);
+    for (int i = 0; i < size; ++i) {
+        g_ptr_array_add(d->pages, poppler_document_get_page(d->document, i));
+    }
+
+    /* create cairo context */
+    // TODO: push layouting into lua by emitting a signal on the doc here
+    gdouble width = 0;
+    gdouble height = 0;
+    gdouble spacing = 10;
+    for (guint i = 0; i < d->pages->len; ++i) {
+        PopplerPage *p = g_ptr_array_index(d->pages, i);
+        gdouble w, h;
+        poppler_page_get_size(p, &w, &h);
+        if (w > width)
+            width = w;
+        height += h + spacing;
+    }
+    if (height > 0)
+        height -= spacing;
+    cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    d->context = cairo_create(s);
     return 0;
 }
 
