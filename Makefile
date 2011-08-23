@@ -32,7 +32,7 @@ $(THEAD) $(TSRC): $(TLIST)
 	./build-utils/gentokens.lua $(TLIST) $@
 
 globalconf.h: globalconf.h.in
-	sed 's#LUAKIT_INSTALL_PATH .*#LUAKIT_INSTALL_PATH "$(PREFIX)/share/luapdf"#' globalconf.h.in > globalconf.h
+	sed 's#LUAPDF_INSTALL_PATH .*#LUAPDF_INSTALL_PATH "$(PREFIX)/share/luapdf"#' globalconf.h.in > globalconf.h
 
 $(OBJS): $(HEADS) config.mk
 

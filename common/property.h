@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef LUAKIT_COMMON_PROPERTY_H
-#define LUAKIT_COMMON_PROPERTY_H
+#ifndef LUAPDF_COMMON_PROPERTY_H
+#define LUAPDF_COMMON_PROPERTY_H
 
 #include <lua.h>
 #include <glib/ghash.h>

@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef LUAKIT_CLIB_WIDGET_H
-#define LUAKIT_CLIB_WIDGET_H
+#ifndef LUAPDF_CLIB_WIDGET_H
+#define LUAPDF_CLIB_WIDGET_H
 
 typedef struct widget_t widget_t;
 

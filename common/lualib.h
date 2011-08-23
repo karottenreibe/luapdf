@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef LUAKIT_COMMON_LUALIB
-#define LUAKIT_COMMON_LUALIB
+#ifndef LUAPDF_COMMON_LUALIB
+#define LUAPDF_COMMON_LUALIB
 
 #include <glib/gprintf.h>
 #include <lauxlib.h>

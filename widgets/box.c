@@ -82,8 +82,8 @@ luaH_box_index(lua_State *L, luapdf_token_t token)
 
     switch(token)
     {
-      LUAKIT_WIDGET_INDEX_COMMON
-      LUAKIT_WIDGET_CONTAINER_INDEX_COMMON(w)
+      LUAPDF_WIDGET_INDEX_COMMON
+      LUAPDF_WIDGET_CONTAINER_INDEX_COMMON(w)
 
       /* push class methods */
       PF_CASE(PACK,         luaH_box_pack)

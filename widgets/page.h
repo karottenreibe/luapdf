@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef LUAKIT_CLIB_PAGE_H
-#define LUAKIT_CLIB_PAGE_H
+#ifndef LUAPDF_CLIB_PAGE_H
+#define LUAPDF_CLIB_PAGE_H
 
 #include <lua.h>
 #include <poppler.h>

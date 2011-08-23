@@ -104,7 +104,7 @@ luaH_label_index(lua_State *L, luapdf_token_t token)
 
     switch(token)
     {
-      LUAKIT_WIDGET_INDEX_COMMON
+      LUAPDF_WIDGET_INDEX_COMMON
 
       case L_TK_PADDING:
         return luaH_label_get_padding(L, w);

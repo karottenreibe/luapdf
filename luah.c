@@ -406,7 +406,7 @@ luaH_init(void)
         g_ptr_array_add(paths, g_build_filename(*config_dirs, "luapdf", NULL));
 
     /* add luapdf install path */
-    g_ptr_array_add(paths, g_build_filename(LUAKIT_INSTALL_PATH, "lib", NULL));
+    g_ptr_array_add(paths, g_build_filename(LUAPDF_INSTALL_PATH, "lib", NULL));
 
     const gchar *path;
     for (guint i = 0; i < paths->len; i++) {

@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef LUAKIT_COMMON_LUAOBJECT_H
-#define LUAKIT_COMMON_LUAOBJECT_H
+#ifndef LUAPDF_COMMON_LUAOBJECT_H
+#define LUAPDF_COMMON_LUAOBJECT_H
 
 #include "common/luaclass.h"
 #include "common/lualib.h"
@@ -79,7 +79,7 @@ luaH_object_push_item(lua_State *L, gint ud, gpointer p) {
 
 static inline void
 luaH_object_registry_push(lua_State *L) {
-    lua_pushliteral(L, LUAKIT_OBJECT_REGISTRY_KEY);
+    lua_pushliteral(L, LUAPDF_OBJECT_REGISTRY_KEY);
     lua_rawget(L, LUA_REGISTRYINDEX);
 }
 

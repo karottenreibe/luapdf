@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef LUAKIT_CLIB_LUAKIT_H
-#define LUAKIT_CLIB_LUAKIT_H
+#ifndef LUAPDF_CLIB_LUAPDF_H
+#define LUAPDF_CLIB_LUAPDF_H
 
 /* lua luapdf class for signals */
 lua_class_t luapdf_class;

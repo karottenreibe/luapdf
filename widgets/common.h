@@ -18,12 +18,12 @@
  *
  */
 
-#ifndef LUAKIT_WIDGETS_COMMON_H
-#define LUAKIT_WIDGETS_COMMON_H
+#ifndef LUAPDF_WIDGETS_COMMON_H
+#define LUAPDF_WIDGETS_COMMON_H
 
 #include "clib/widget.h"
 
-#define LUAKIT_WIDGET_INDEX_COMMON                    \
+#define LUAPDF_WIDGET_INDEX_COMMON                    \
     case L_TK_SHOW:                                   \
       lua_pushcfunction(L, luaH_widget_show);         \
       return 1;                                       \
@@ -37,15 +37,15 @@
       lua_pushcfunction(L, luaH_widget_destroy);      \
       return 1;
 
-#define LUAKIT_WIDGET_BIN_INDEX_COMMON(widget)        \
+#define LUAPDF_WIDGET_BIN_INDEX_COMMON(widget)        \
     case L_TK_CHILD:                                  \
       return luaH_widget_get_child(L, widget);
 
-#define LUAKIT_WIDGET_BIN_NEWINDEX_COMMON(widget)     \
+#define LUAPDF_WIDGET_BIN_NEWINDEX_COMMON(widget)     \
     case L_TK_CHILD:                                  \
       return luaH_widget_set_child(L, widget);
 
-#define LUAKIT_WIDGET_CONTAINER_INDEX_COMMON(widget)  \
+#define LUAPDF_WIDGET_CONTAINER_INDEX_COMMON(widget)  \
     case L_TK_REMOVE:                                 \
       lua_pushcfunction(L, luaH_widget_remove);       \
       return 1;                                       \

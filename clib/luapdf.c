@@ -454,7 +454,7 @@ luaH_luapdf_index(lua_State *L)
         return luaH_luapdf_selection_table_push(L);
 
       case L_TK_INSTALL_PATH:
-        lua_pushliteral(L, LUAKIT_INSTALL_PATH);
+        lua_pushliteral(L, LUAPDF_INSTALL_PATH);
         return 1;
 
       case L_TK_VERSION:

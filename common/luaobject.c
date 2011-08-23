@@ -25,7 +25,7 @@
 void
 luaH_object_setup(lua_State *L) {
     /* Push identification string */
-    lua_pushliteral(L, LUAKIT_OBJECT_REGISTRY_KEY);
+    lua_pushliteral(L, LUAPDF_OBJECT_REGISTRY_KEY);
     /* Create an empty table */
     lua_newtable(L);
     /* Create an empty metatable */

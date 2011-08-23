@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef LUAKIT_COMMON_SIGNAL
-#define LUAKIT_COMMON_SIGNAL
+#ifndef LUAPDF_COMMON_SIGNAL
+#define LUAPDF_COMMON_SIGNAL
 
 #include <glib/garray.h>
 #include <glib/gstrfuncs.h>

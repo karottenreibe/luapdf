@@ -28,9 +28,9 @@ luaH_eventbox_index(lua_State *L, luapdf_token_t token)
 
     switch(token)
     {
-      LUAKIT_WIDGET_INDEX_COMMON
-      LUAKIT_WIDGET_BIN_INDEX_COMMON(w)
-      LUAKIT_WIDGET_CONTAINER_INDEX_COMMON(w)
+      LUAPDF_WIDGET_INDEX_COMMON
+      LUAPDF_WIDGET_BIN_INDEX_COMMON(w)
+      LUAPDF_WIDGET_CONTAINER_INDEX_COMMON(w)
 
       /* push string properties */
       PS_CASE(BG, g_object_get_data(G_OBJECT(w->widget), "bg"))
@@ -51,7 +51,7 @@ luaH_eventbox_newindex(lua_State *L, luapdf_token_t token)
 
     switch(token)
     {
-      LUAKIT_WIDGET_BIN_NEWINDEX_COMMON(w)
+      LUAPDF_WIDGET_BIN_NEWINDEX_COMMON(w)
 
       case L_TK_BG:
         tmp = luaL_checklstring(L, 3, &len);

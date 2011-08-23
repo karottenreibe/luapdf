@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef LUAKIT_COMMON_LUACLASS_H
-#define LUAKIT_COMMON_LUACLASS_H
+#ifndef LUAPDF_COMMON_LUACLASS_H
+#define LUAPDF_COMMON_LUACLASS_H
 
 #include "common/lualib.h"
 #include "common/signal.h"

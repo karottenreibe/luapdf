@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef LUAKIT_COMMON_UTIL_H
-#define LUAKIT_COMMON_UTIL_H
+#ifndef LUAPDF_COMMON_UTIL_H
+#define LUAPDF_COMMON_UTIL_H
 
 #include <glib/gtypes.h>
 #include <string.h>

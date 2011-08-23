@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef LUAKIT_CLIB_TIMER_H
-#define LUAKIT_CLIB_TIMER_H
+#ifndef LUAPDF_CLIB_TIMER_H
+#define LUAPDF_CLIB_TIMER_H
 
 #include <lua.h>
 

@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef LUAKIT_LUA_H
-#define LUAKIT_LUA_H
+#ifndef LUAPDF_LUA_H
+#define LUAPDF_LUA_H
 
 #include "common/luaobject.h"
 #include "common/lualib.h"

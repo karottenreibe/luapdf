@@ -100,7 +100,7 @@ luaH_page_index(lua_State *L, luapdf_token_t token)
 
     switch(token)
     {
-      LUAKIT_WIDGET_INDEX_COMMON
+      LUAPDF_WIDGET_INDEX_COMMON
 
       /* number properties */
       PN_CASE(ZOOM,     d->zoom);

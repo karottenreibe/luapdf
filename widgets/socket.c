@@ -46,7 +46,7 @@ luaH_socket_index(lua_State *L, luapdf_token_t token)
 
     switch(token)
     {
-      LUAKIT_WIDGET_INDEX_COMMON
+      LUAPDF_WIDGET_INDEX_COMMON
 
       /* push integer methods */
       PI_CASE(ID,      (int) gtk_socket_get_id(GTK_SOCKET(w->widget)))
