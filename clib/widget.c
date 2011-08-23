@@ -33,7 +33,6 @@ widget_info_t widgets_list[] = {
   { L_TK_VPANED,    "vpaned",   widget_paned    },
   { L_TK_WINDOW,    "window",   widget_window   },
   { L_TK_DOCUMENT,  "document", widget_document },
-  { L_TK_PAGE,      "page",     widget_page     },
 };
 
 LUA_OBJECT_FUNCS(widget_class, widget_t, widget);
