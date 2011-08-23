@@ -18,18 +18,18 @@
  *
  */
 
-#ifndef LUAKIT_GLOBALCONF
-#define LUAKIT_GLOBALCONF
+#ifndef LUAPDF_GLOBALCONF
+#define LUAPDF_GLOBALCONF
 
 /** Install location of luapdf shared files. This serves as the base path for
  * all system Lua module loading paths. */
-#define LUAKIT_INSTALL_PATH "/usr/local/share/luapdf"
+#define LUAPDF_INSTALL_PATH "/usr/local/share/luapdf"
 
 /** Registry key for the Lua registry API to store a private reference counting
  * table. This table prevents garbage collection of objects (userdata or
  * tables) while in use by C functions or objects.
  * \see http://www.lua.org/manual/5.1/manual.html#3.5 */
-#define LUAKIT_OBJECT_REGISTRY_KEY "luapdf.object.registry"
+#define LUAPDF_OBJECT_REGISTRY_KEY "luapdf.object.registry"
 
 #include <glib/gtypes.h>
 #include <lua.h>
