@@ -41,6 +41,14 @@ typedef struct {
     cairo_t *context;
 } document_data_t;
 
+typedef struct {
+    PopplerPage *page;
+    gdouble x;
+    gdouble y;
+    gdouble w;
+    gdouble h;
+} page_info_t;
+
 static widget_t*
 luaH_checkdocument(lua_State *L, gint udx)
 {
@@ -67,8 +75,11 @@ luaH_document_destructor(widget_t *w) {
         g_object_unref(G_OBJECT(d->document));
     /* release our references on the pages. Poppler handles freeing it */
     if (d->pages) {
-        for (guint i = 0; i < d->pages->len; ++i)
-            g_object_unref(G_OBJECT(g_ptr_array_index(d->pages, i)));
+        for (guint i = 0; i < d->pages->len; ++i) {
+            page_info_t *p = g_ptr_array_index(d->pages, i);
+            g_object_unref(G_OBJECT(p->page));
+            g_slice_free(page_info_t, p);
+        }
         g_ptr_array_free(d->pages, TRUE);
     }
     g_slice_free(document_data_t, d);
@@ -93,7 +104,9 @@ luaH_document_load(lua_State *L)
     const gint size = poppler_document_get_n_pages(d->document);
     d->pages = g_ptr_array_sized_new(size);
     for (int i = 0; i < size; ++i) {
-        g_ptr_array_add(d->pages, poppler_document_get_page(d->document, i));
+        page_info_t *p = g_slice_new0(page_info_t);
+        p->page = poppler_document_get_page(d->document, i);
+        g_ptr_array_add(d->pages, p);
     }
 
     /* create cairo context */
@@ -102,12 +115,16 @@ luaH_document_load(lua_State *L)
     gdouble height = 0;
     gdouble spacing = 10;
     for (guint i = 0; i < d->pages->len; ++i) {
-        PopplerPage *p = g_ptr_array_index(d->pages, i);
-        gdouble w, h;
-        poppler_page_get_size(p, &w, &h);
-        if (w > width)
-            width = w;
-        height += h + spacing;
+        page_info_t *p = g_ptr_array_index(d->pages, i);
+        p->y = height;
+        poppler_page_get_size(p->page, &p->w, &p->h);
+        if (p->w > width)
+            width = p->w;
+        height += p->h + spacing;
+    }
+    for (guint i = 0; i < d->pages->len; ++i) {
+        page_info_t *p = g_ptr_array_index(d->pages, i);
+        p->x = (width - p->w) / 2;
     }
     if (height > 0)
         height -= spacing;
@@ -133,23 +150,6 @@ luaH_document_goto(lua_State *L)
     return 0;
 }
 
-static int
-luaH_document_push_pages(lua_State *L, document_data_t *d)
-{
-    if (!d->pages_ref) {
-        lua_newtable(L);
-        PopplerDocument *doc = d->document;
-        int n = poppler_document_get_n_pages(doc);
-        for (int i = 0; i < n; ++i) {
-            luaH_page_new(L, doc, i);
-            lua_rawseti(L, -2, i + 1);
-        }
-        d->pages_ref = luaH_object_ref(L, -1);
-    }
-    luaH_object_push(L, d->pages_ref);
-    return 1;
-}
-
 static gint
 luaH_document_index(lua_State *L, luapdf_token_t token)
 {
@@ -167,9 +167,6 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
 
       /* integers */
       PI_CASE(CURRENT,  d->current + 1);
-
-      case L_TK_PAGES:
-        return luaH_document_push_pages(L, d);
 
       default:
         return d->super_index(L, token);
