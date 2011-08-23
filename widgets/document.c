@@ -39,6 +39,7 @@ typedef struct {
     /* drawing data */
     cairo_t *context;
     gint spacing;
+    gdouble zoom;
     /* widgets */
     GtkWidget *image;
     GtkWidget *win;
@@ -50,6 +51,7 @@ typedef struct {
     gdouble y;
     gdouble w;
     gdouble h;
+    gboolean rendered;
 } page_info_t;
 
 static widget_t*
@@ -87,6 +89,33 @@ luaH_document_destructor(widget_t *w) {
         g_ptr_array_free(d->pages, TRUE);
     }
     g_slice_free(document_data_t, d);
+}
+
+static void
+page_render(document_data_t *d, int index)
+{
+    page_info_t *i = g_ptr_array_index(d->pages, index);
+    if (!i->rendered) {
+        PopplerPage *p = i->page;
+        /* render page to pixbuf */
+        gdouble zoom = d->zoom;
+        gdouble width = i->w * zoom;
+        gdouble height = i->h * zoom;
+        cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+        cairo_t *c = cairo_create(s);
+        cairo_scale(c, zoom, zoom);
+        poppler_page_render(p, c);
+        /* render context to pixbuf */
+        gint stride = cairo_image_surface_get_stride(s);
+        guchar *data = cairo_image_surface_get_data(s);
+        GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
+        /* render pixbuf onto master pixbuf */
+        GdkPixbuf *master = gtk_image_get_pixbuf(GTK_IMAGE(d->image));
+        gdouble xoffset = i->x * zoom;
+        gdouble yoffset = i->y * zoom;
+        gdk_pixbuf_composite(buf, master, xoffset, yoffset, width, height, xoffset, yoffset, 0, 0, GDK_INTERP_BILINEAR, 255);
+        i->rendered = TRUE;
+    }
 }
 
 static int
@@ -133,6 +162,11 @@ luaH_document_load(lua_State *L)
         height -= d->spacing;
     cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     d->context = cairo_create(s);
+
+    /* TODO: for now: render all pages on load */
+    for (guint i = 0; i < d->pages->len; ++i) {
+        page_render(d, i);
+    }
     return 0;
 }
 
@@ -217,6 +251,7 @@ widget_document(widget_t *w, luapdf_token_t token)
 
     document_data_t *d = g_slice_new0(document_data_t);
     d->spacing = 10;
+    d->zoom = 1.0;
     d->image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     d->win = gtk_scrolled_window_new(NULL, NULL);
     w->data = d;
