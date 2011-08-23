@@ -510,7 +510,6 @@ window.methods = {
     new_tab = function (w, path, opts)
         opts = opts or {}
         local doc = document.new(w, path, opts.password)
-        doc.bg = theme.document_bg
         -- Get tab order function
         local order = opts.order
         if not order and taborder then
@@ -518,10 +517,8 @@ window.methods = {
                 or taborder.default
         end
         pos = w.tabs:insert((order and order(w, doc)) or -1, doc)
-        doc:goto(doc.pages[opts.page or 1])
         if opts.switch ~= false then w.tabs:switch(pos) end
         -- Update statusbar widgets
-        w:update_scroll(doc)
         w:update_tab_count()
         w:update_tablist()
         return doc

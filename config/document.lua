@@ -69,38 +69,6 @@ document.methods = {
     set = function (doc, w, k, v)
         doc:set_property(k, v)
     end,
-
-    goto = function (doc, w, n)
-        if n < 0 then n = #doc.pages + n + 1 end
-        if n < 1 then return end
-        if n > #doc.pages then return end
-        doc:goto(doc.pages[n])
-        w:update_scroll()
-    end,
-
-    -- Zoom functions
-    zoom_in = function (doc, w, step)
-        step = step or globals.zoom_step or 0.1
-        for _, p in ipairs(doc.pages) do
-            p.zoom = p.zoom + step
-        end
-        w:goto(doc.current)
-    end,
-
-    zoom_out = function (doc, w, step)
-        step = step or globals.zoom_step or 0.1
-        for _, p in ipairs(doc.pages) do
-            p.zoom = math.max(0.01, p.zoom - step)
-        end
-        w:goto(doc.current)
-    end,
-
-    zoom_set = function (doc, w, level)
-        for _, p in ipairs(doc.pages) do
-            p.zoom = level or 1.0
-        end
-        w:goto(doc.current)
-    end,
 }
 
 document.scroll_parse_funcs = {
