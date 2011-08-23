@@ -35,10 +35,11 @@ typedef struct {
     PopplerDocument *document;
     const gchar *path;
     const gchar *password;
-    int current;
+    gint current;
     gpointer pages_ref;
     GPtrArray *pages;
     cairo_t *context;
+    gint spacing;
 } document_data_t;
 
 typedef struct {
@@ -113,21 +114,20 @@ luaH_document_load(lua_State *L)
     // TODO: push layouting into lua by emitting a signal on the doc here
     gdouble width = 0;
     gdouble height = 0;
-    gdouble spacing = 10;
     for (guint i = 0; i < d->pages->len; ++i) {
         page_info_t *p = g_ptr_array_index(d->pages, i);
         p->y = height;
         poppler_page_get_size(p->page, &p->w, &p->h);
         if (p->w > width)
             width = p->w;
-        height += p->h + spacing;
+        height += p->h + d->spacing;
     }
     for (guint i = 0; i < d->pages->len; ++i) {
         page_info_t *p = g_ptr_array_index(d->pages, i);
         p->x = (width - p->w) / 2;
     }
     if (height > 0)
-        height -= spacing;
+        height -= d->spacing;
     cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     d->context = cairo_create(s);
     return 0;
@@ -209,6 +209,7 @@ widget_document(widget_t *w, luapdf_token_t token)
     widget_eventbox(w, token);
 
     document_data_t *d = g_slice_new0(document_data_t);
+    d->spacing = 10;
     w->data = d;
 
     d->super_index = w->index;
