@@ -21,25 +21,27 @@
 
 #include "luah.h"
 #include "clib/widget.h"
+#include "widgets/common.h"
 #include "widgets/page.h"
 
 #include <gtk/gtk.h>
 #include <poppler.h>
 
 typedef struct {
-    /* functions of the superclass */
-    widget_destructor_t *super_destructor;
-    gint (*super_index)(lua_State *, luapdf_token_t);
-    gint (*super_newindex)(lua_State *, luapdf_token_t);
-    /* document data */
+    /* document */
     PopplerDocument *document;
     const gchar *path;
     const gchar *password;
+    /* pages */
     gint current;
     gpointer pages_ref;
     GPtrArray *pages;
+    /* drawing data */
     cairo_t *context;
     gint spacing;
+    /* widgets */
+    GtkWidget *image;
+    GtkWidget *win;
 } document_data_t;
 
 typedef struct {
@@ -70,7 +72,8 @@ luaH_checkdocument_data(lua_State *L, gint udx)
 static void
 luaH_document_destructor(widget_t *w) {
     document_data_t *d = w->data;
-    d->super_destructor(w);
+    gtk_widget_destroy(GTK_WIDGET(d->image));
+    gtk_widget_destroy(GTK_WIDGET(d->win));
     /* release our reference on the document. Poppler handles freeing it */
     if (d->document)
         g_object_unref(G_OBJECT(d->document));
@@ -169,8 +172,9 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
       PI_CASE(CURRENT,  d->current + 1);
 
       default:
-        return d->super_index(L, token);
+        break;
     }
+
     return 0;
 }
 
@@ -181,6 +185,8 @@ luaH_document_newindex(lua_State *L, luapdf_token_t token)
 
     switch(token)
     {
+      LUAKIT_WIDGET_INDEX_COMMON
+
       case L_TK_PATH:
         if (lua_isnil(L, 3))
             d->path = NULL;
@@ -196,7 +202,8 @@ luaH_document_newindex(lua_State *L, luapdf_token_t token)
         break;
 
       default:
-        return d->super_newindex(L, token);
+        warn("unknown property: %s", luaL_checkstring(L, 2));
+        return 0;
     }
 
     return luaH_object_emit_property_signal(L, 1);
@@ -210,15 +217,25 @@ widget_document(widget_t *w, luapdf_token_t token)
 
     document_data_t *d = g_slice_new0(document_data_t);
     d->spacing = 10;
+    d->image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
+    d->win = gtk_scrolled_window_new(NULL, NULL);
     w->data = d;
 
-    d->super_index = w->index;
-    d->super_newindex = w->newindex;
-    d->super_destructor = w->destructor;
+    w->widget = d->win;
+
+    /* set gobject property to give other widgets a pointer to our webview */
+    g_object_set_data(G_OBJECT(w->widget), "lua_widget", w);
+
+    /* add image to scrolled window */
+    gtk_container_add(GTK_CONTAINER(d->win), d->image);
 
     w->index = luaH_document_index;
     w->newindex = luaH_document_newindex;
     w->destructor = luaH_document_destructor;
+
+    /* show widgets */
+    gtk_widget_show(d->image);
+    gtk_widget_show(d->win);
 
     return w;
 }
