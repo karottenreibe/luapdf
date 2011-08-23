@@ -38,6 +38,7 @@ typedef struct {
     GPtrArray *pages;
     /* drawing data */
     cairo_t *context;
+    cairo_surface_t *surface;
     gint spacing;
     gdouble zoom;
     /* widgets */
@@ -97,23 +98,13 @@ page_render(document_data_t *d, int index)
     page_info_t *i = g_ptr_array_index(d->pages, index);
     if (!i->rendered) {
         PopplerPage *p = i->page;
-        /* render page to pixbuf */
-        gdouble zoom = d->zoom;
-        gdouble width = i->w * zoom;
-        gdouble height = i->h * zoom;
-        cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+        /* render page to master context */
+        cairo_surface_t *s = cairo_surface_create_for_rectangle(d->surface, i->x, i->y, i->w, i->h);
         cairo_t *c = cairo_create(s);
-        cairo_scale(c, zoom, zoom);
         poppler_page_render(p, c);
-        /* render context to pixbuf */
-        gint stride = cairo_image_surface_get_stride(s);
-        guchar *data = cairo_image_surface_get_data(s);
-        GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
-        /* render pixbuf onto master pixbuf */
-        GdkPixbuf *master = gtk_image_get_pixbuf(GTK_IMAGE(d->image));
-        gdouble xoffset = i->x * zoom;
-        gdouble yoffset = i->y * zoom;
-        gdk_pixbuf_composite(buf, master, xoffset, yoffset, width, height, xoffset, yoffset, 0, 0, GDK_INTERP_BILINEAR, 255);
+        /* cleanup */
+        cairo_destroy(c);
+        cairo_surface_destroy(s);
         i->rendered = TRUE;
     }
 }
@@ -161,12 +152,25 @@ luaH_document_load(lua_State *L)
     if (height > 0)
         height -= d->spacing;
     cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    d->context = cairo_create(s);
+    cairo_t *c = cairo_create(d->surface);
+    d->surface = s;
+    d->context = c;
 
     /* TODO: for now: render all pages on load */
     for (guint i = 0; i < d->pages->len; ++i) {
         page_render(d, i);
     }
+
+    /* zoom */
+    cairo_save(c);
+    cairo_scale(c, d->zoom, d->zoom);
+    /* render context to image */
+    gint stride = cairo_image_surface_get_stride(s);
+    guchar *data = cairo_image_surface_get_data(s);
+    GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
+    gtk_image_set_from_pixbuf(GTK_IMAGE(d->image), buf);
+    /* un-zoom */
+    cairo_restore(c);
     return 0;
 }
 
@@ -262,7 +266,7 @@ widget_document(widget_t *w, luapdf_token_t token)
     g_object_set_data(G_OBJECT(w->widget), "lua_widget", w);
 
     /* add image to scrolled window */
-    gtk_container_add(GTK_CONTAINER(d->win), d->image);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(d->win), d->image);
 
     w->index = luaH_document_index;
     w->newindex = luaH_document_newindex;
