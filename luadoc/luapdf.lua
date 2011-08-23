@@ -4,7 +4,7 @@
 -- @copyright 2010 Mason Larobina, Paweł Zuzelski
 module("luapdf")
 
---- Luakit global table
+--- Luapdf global table
 -- @field config_dir config directory path (default: XDG_CONFIG_HOME)
 -- @field data_dir data directory path (default: XDG_DATA_HOME)
 -- @field cache_dir cache directory path (default: XDG_CACHE_HOME)
