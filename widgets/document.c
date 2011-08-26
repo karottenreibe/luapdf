@@ -36,10 +36,13 @@ typedef struct {
     gpointer pages_ref;
     GPtrArray *pages;
     /* drawing data */
-    cairo_t *context;
     cairo_surface_t *surface;
     gint spacing;
     gdouble zoom;
+    gdouble scrollx;
+    gdouble scrolly;
+    gdouble width;
+    gdouble height;
     /* widgets */
     GtkWidget *image;
     GtkWidget *win;
@@ -51,7 +54,7 @@ typedef struct {
     gdouble y;
     gdouble w;
     gdouble h;
-    gboolean rendered;
+    cairo_surface_t *surface;
 } page_info_t;
 
 static widget_t*
@@ -84,6 +87,7 @@ luaH_document_destructor(widget_t *w) {
         for (guint i = 0; i < d->pages->len; ++i) {
             page_info_t *p = g_ptr_array_index(d->pages, i);
             g_object_unref(G_OBJECT(p->page));
+            cairo_surface_destroy(p->surface);
             g_slice_free(page_info_t, p);
         }
         g_ptr_array_free(d->pages, TRUE);
@@ -92,20 +96,15 @@ luaH_document_destructor(widget_t *w) {
 }
 
 static void
-page_render(document_data_t *d, int index)
+page_render(cairo_t *c, page_info_t *i)
 {
-    page_info_t *i = g_ptr_array_index(d->pages, index);
-    if (!i->rendered) {
-        PopplerPage *p = i->page;
-        /* render page to master context */
-        cairo_surface_t *s = cairo_surface_create_for_rectangle(d->surface, i->x, i->y, i->w, i->h);
-        cairo_t *c = cairo_create(s);
-        poppler_page_render(p, c);
-        /* cleanup */
-        cairo_destroy(c);
-        cairo_surface_destroy(s);
-        i->rendered = TRUE;
-    }
+    PopplerPage *p = i->page;
+    /* render background */
+    cairo_rectangle(c, 0, 0, i->w, i->h);
+    cairo_set_source_rgb(c, 1, 1, 1);
+    cairo_fill(c);
+    /* render page */
+    poppler_page_render(p, c);
 }
 
 static int
@@ -132,7 +131,7 @@ luaH_document_load(lua_State *L)
         g_ptr_array_add(d->pages, p);
     }
 
-    /* create cairo context */
+    /* calculate page geometry and positioning */
     // TODO: push layouting into lua by emitting a signal on the doc here
     gdouble width = 0;
     gdouble height = 0;
@@ -150,26 +149,54 @@ luaH_document_load(lua_State *L)
     }
     if (height > 0)
         height -= d->spacing;
+
+    d->width = width;
+    d->height = height;
+
+    /* calculate visible region */
+    width = GTK_WIDGET(d->image)->allocation.width;
+    height = GTK_WIDGET(d->image)->allocation.height;
+    width = 600;
+    height = 600;
+    cairo_rectangle_int_t rect = {
+        d->scrollx,
+        d->scrolly,
+        width,
+        height,
+    };
+    cairo_region_t *visible_r = cairo_region_create_rectangle(&rect);
+
+    /* render recorded data into image surface */
     cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    cairo_t *c = cairo_create(d->surface);
     d->surface = s;
-    d->context = c;
+    cairo_t *c = cairo_create(s);
 
-    /* TODO: for now: render all pages on load */
+    /* render pages with scroll and zoom */
     for (guint i = 0; i < d->pages->len; ++i) {
-        page_render(d, i);
+        page_info_t *p = g_ptr_array_index(d->pages, i);
+        cairo_rectangle_int_t page_rect = {
+            (p->x - d->scrollx) * d->zoom,
+            (p->y - d->scrolly) * d->zoom,
+            p->w * d->zoom,
+            p->h * d->zoom,
+        };
+        if (cairo_region_contains_rectangle(visible_r, &page_rect) != CAIRO_REGION_OVERLAP_OUT) {
+            printf("%i\n", i);
+            cairo_scale(c, d->zoom, d->zoom);
+            cairo_translate(c, p->x, p->y - d->scrolly);
+            page_render(c, p);
+            cairo_identity_matrix(c);
+        }
     }
+    cairo_region_destroy(visible_r);
 
-    /* zoom */
-    cairo_save(c);
-    cairo_scale(c, d->zoom, d->zoom);
-    /* render context to image */
+    /* render to image widget */
     gint stride = cairo_image_surface_get_stride(s);
     guchar *data = cairo_image_surface_get_data(s);
     GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
     gtk_image_set_from_pixbuf(GTK_IMAGE(d->image), buf);
-    /* un-zoom */
-    cairo_restore(c);
+    cairo_destroy(c);
+    //cairo_surface_destroy(is);
     return 0;
 }
 

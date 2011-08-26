@@ -24,15 +24,6 @@ function window.build()
         layout = vbox(),
         tabs   = notebook(),
 
-        -- Wrapper around the tabs
-        main = {
-            hlayout = hbox(),
-            vlayout = vbox(),
-            t = eventbox(),
-            r = eventbox(),
-            b = eventbox(),
-            l = eventbox(),
-        },
         -- Tablist widget
         tablist = lousy.widget.tablist(),
         -- Status bar widgets
@@ -79,14 +70,7 @@ function window.build()
     w.layout:pack(w.tablist.widget)
 
     -- Pack notebook
-    local m = w.main
-    w.layout:pack(m.hlayout, { expand = true, fill = true })
-    m.hlayout:pack(m.l, { expand = true, fill = true })
-    m.hlayout:pack(m.vlayout)
-    m.hlayout:pack(m.r, { expand = true, fill = true })
-    m.vlayout:pack(m.t, { expand = true, fill = true })
-    m.vlayout:pack(w.tabs)
-    m.vlayout:pack(m.b, { expand = true, fill = true })
+    w.layout:pack(w.tabs, { expand = true, fill = true })
 
     -- Pack left-aligned statusbar elements
     local l = w.sbar.l
