@@ -27,6 +27,7 @@
 #include <poppler.h>
 
 typedef struct {
+    GtkWidget *widget;
     /* document */
     PopplerDocument *document;
     const gchar *path;
@@ -44,8 +45,6 @@ typedef struct {
     gdouble height;
     gdouble page_width;
     gdouble page_height;
-    /* widgets */
-    GtkWidget *image;
 } document_data_t;
 
 typedef struct {
@@ -77,7 +76,7 @@ luaH_checkdocument_data(lua_State *L, gint udx)
 static void
 luaH_document_destructor(widget_t *w) {
     document_data_t *d = w->data;
-    gtk_widget_destroy(GTK_WIDGET(d->image));
+    gtk_widget_destroy(GTK_WIDGET(d->widget));
     /* release our reference on the document. Poppler handles freeing it */
     if (d->document)
         g_object_unref(G_OBJECT(d->document));
@@ -177,8 +176,8 @@ page_render(cairo_t *c, page_info_t *i)
 static void
 document_update_adjustments(document_data_t *d)
 {
-    d->hadjust->page_size = d->image->allocation.width / d->zoom;
-    d->vadjust->page_size = d->image->allocation.height / d->zoom;
+    d->hadjust->page_size = d->widget->allocation.width / d->zoom;
+    d->vadjust->page_size = d->widget->allocation.height / d->zoom;
 }
 
 static int
@@ -243,13 +242,11 @@ luaH_document_load(lua_State *L)
 static void
 document_render(document_data_t *d)
 {
-    GtkWidget *image = d->image;
-    if (!gtk_widget_get_visible(image))
-        return;
+    GtkWidget *w = d->widget;
 
     /* calculate visible region */
-    gdouble width = image->allocation.width;
-    gdouble height = image->allocation.height;
+    gdouble width = w->allocation.width;
+    gdouble height = w->allocation.height;
     cairo_rectangle_int_t rect = {
         d->hadjust->value * d->zoom,
         d->vadjust->value * d->zoom,
@@ -258,9 +255,8 @@ document_render(document_data_t *d)
     };
     cairo_region_t *visible_r = cairo_region_create_rectangle(&rect);
 
-    /* render recorded data into image surface */
-    cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    cairo_t *c = cairo_create(s);
+    /* render recorded data directly to widget */
+    cairo_t *c = gdk_cairo_create(gtk_widget_get_window(w));
 
     /* render pages with scroll and zoom */
     for (guint i = 0; i < d->pages->len; ++i) {
@@ -280,14 +276,6 @@ document_render(document_data_t *d)
     }
     cairo_region_destroy(visible_r);
     cairo_destroy(c);
-
-    /* render to image widget */
-    gint stride = cairo_image_surface_get_stride(s);
-    guchar *data = cairo_image_surface_get_data(s);
-    GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
-    gtk_image_set_from_pixbuf(GTK_IMAGE(d->image), buf);
-    // TODO: segfaults
-    //cairo_surface_destroy(s);
 }
 
 static gint
@@ -364,27 +352,24 @@ render_cb(gpointer *UNUSED(p), document_data_t *d)
 }
 
 void
-resize_render_cb(gpointer *UNUSED(p), GdkRectangle *r, document_data_t *d)
+resize_cb(gpointer *UNUSED(p), GdkRectangle *UNUSED(r), document_data_t *d)
 {
-    static gint w, h;
-    if (w != r->width || h != r->height) {
-        w = r->width;
-        h = r->height;
-        document_update_adjustments(d);
-        document_render(d);
-    }
+    document_update_adjustments(d);
+}
+
+void
+expose_cb(GtkWidget *UNUSED(w), GdkEventExpose *UNUSED(e), document_data_t *d)
+{
+    document_render(d);
 }
 
 widget_t *
-widget_document(widget_t *w, luapdf_token_t token)
+widget_document(widget_t *w, luapdf_token_t UNUSED(token))
 {
-    /* super constructor */
-    widget_eventbox(w, token);
-
     document_data_t *d = g_slice_new0(document_data_t);
     d->spacing = 10;
     d->zoom = 1.0;
-    d->image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
+    d->widget = gtk_event_box_new();
     d->hadjust = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 10, 1, 0));
     d->vadjust = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 10, 1, 0));
     w->data = d;
@@ -396,12 +381,12 @@ widget_document(widget_t *w, luapdf_token_t token)
     g_object_connect(G_OBJECT(d->vadjust),
       "signal::value-changed",        G_CALLBACK(render_cb),         d,
       NULL);
-    g_object_connect(G_OBJECT(d->image),
-      "signal::realize",              G_CALLBACK(render_cb),         d,
-      "signal::size-allocate",        G_CALLBACK(resize_render_cb),  d,
+    g_object_connect(G_OBJECT(d->widget),
+      "signal::expose-event",         G_CALLBACK(expose_cb),         d,
+      "signal::size-allocate",        G_CALLBACK(resize_cb),         d,
       NULL);
 
-    w->widget = d->image;
+    w->widget = d->widget;
     /* set gobject property to give other widgets a pointer to our image widget */
     g_object_set_data(G_OBJECT(w->widget), "lua_widget", w);
 
@@ -410,7 +395,7 @@ widget_document(widget_t *w, luapdf_token_t token)
     w->destructor = luaH_document_destructor;
 
     /* show widgets */
-    gtk_widget_show(d->image);
+    gtk_widget_show(d->widget);
 
     return w;
 }
