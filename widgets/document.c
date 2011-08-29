@@ -39,8 +39,8 @@ typedef struct {
     cairo_surface_t *surface;
     gint spacing;
     gdouble zoom;
-    gdouble scrollx;
-    gdouble scrolly;
+    GtkAdjustment *hadjust;
+    GtkAdjustment *vadjust;
     gdouble width;
     gdouble height;
     /* widgets */
@@ -90,7 +90,75 @@ luaH_document_destructor(widget_t *w) {
         }
         g_ptr_array_free(d->pages, TRUE);
     }
+    g_free(d->hadjust);
+    g_free(d->vadjust);
     g_slice_free(document_data_t, d);
+}
+
+static gint
+luaH_document_scroll_newindex(lua_State *L)
+{
+    /* get document widget upvalue */
+    document_data_t *d = luaH_checkdocument_data(L, lua_upvalueindex(1));
+    const gchar *prop = luaL_checkstring(L, 2);
+    luapdf_token_t t = l_tokenize(prop);
+
+    GtkAdjustment *a;
+    if (t == L_TK_X)      a = d->hadjust;
+    else if (t == L_TK_Y) a = d->vadjust;
+    else return 0;
+
+    gdouble value = luaL_checknumber(L, 3);
+    gdouble max = gtk_adjustment_get_upper(a) -
+            gtk_adjustment_get_page_size(a);
+    gtk_adjustment_set_value(a, ((value < 0 ? 0 : value) > max ? max : value));
+    return 0;
+}
+
+static gint
+luaH_document_scroll_index(lua_State *L)
+{
+    document_data_t *d = luaH_checkdocument_data(L, lua_upvalueindex(1));
+    const gchar *prop = luaL_checkstring(L, 2);
+    luapdf_token_t t = l_tokenize(prop);
+
+    GtkAdjustment *a = (*prop == 'x') ? d->hadjust : d->vadjust;
+
+    if (t == L_TK_X || t == L_TK_Y) {
+        lua_pushnumber(L, gtk_adjustment_get_value(a));
+        return 1;
+
+    } else if (t == L_TK_XMAX || t == L_TK_YMAX) {
+        lua_pushnumber(L, gtk_adjustment_get_upper(a) -
+                gtk_adjustment_get_page_size(a));
+        return 1;
+
+    } else if (t == L_TK_XPAGE_SIZE || t == L_TK_YPAGE_SIZE) {
+        lua_pushnumber(L, gtk_adjustment_get_page_size(a));
+        return 1;
+    }
+    return 0;
+}
+
+static gint
+luaH_document_push_scroll_table(lua_State *L)
+{
+    /* create scroll table */
+    lua_newtable(L);
+    /* setup metatable */
+    lua_createtable(L, 0, 2);
+    /* push __index metafunction */
+    lua_pushliteral(L, "__index");
+    lua_pushvalue(L, 1); /* copy document userdata */
+    lua_pushcclosure(L, luaH_document_scroll_index, 1);
+    lua_rawset(L, -3);
+    /* push __newindex metafunction */
+    lua_pushliteral(L, "__newindex");
+    lua_pushvalue(L, 1); /* copy document userdata */
+    lua_pushcclosure(L, luaH_document_scroll_newindex, 1);
+    lua_rawset(L, -3);
+    lua_setmetatable(L, -2);
+    return 1;
 }
 
 static void
@@ -157,8 +225,8 @@ luaH_document_load(lua_State *L)
     width = 600;
     height = 600;
     cairo_rectangle_int_t rect = {
-        d->scrollx,
-        d->scrolly,
+        d->hadjust->value,
+        d->vadjust->value,
         width,
         height,
     };
@@ -173,14 +241,14 @@ luaH_document_load(lua_State *L)
     for (guint i = 0; i < d->pages->len; ++i) {
         page_info_t *p = g_ptr_array_index(d->pages, i);
         cairo_rectangle_int_t page_rect = {
-            (p->x - d->scrollx) * d->zoom,
-            (p->y - d->scrolly) * d->zoom,
+            (p->x - d->hadjust->value) * d->zoom,
+            (p->y - d->vadjust->value) * d->zoom,
             p->w * d->zoom,
             p->h * d->zoom,
         };
         if (cairo_region_contains_rectangle(visible_r, &page_rect) != CAIRO_REGION_OVERLAP_OUT) {
             cairo_scale(c, d->zoom, d->zoom);
-            cairo_translate(c, p->x, p->y - d->scrolly);
+            cairo_translate(c, p->x, p->y - d->vadjust->value);
             page_render(c, p);
             cairo_identity_matrix(c);
         }
@@ -213,6 +281,9 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
 
       /* integers */
       PI_CASE(CURRENT,  d->current + 1);
+
+      case L_TK_SCROLL:
+        return luaH_document_push_scroll_table(L);
 
       default:
         break;
@@ -262,12 +333,13 @@ widget_document(widget_t *w, luapdf_token_t token)
     d->spacing = 10;
     d->zoom = 1.0;
     d->image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
+    d->hadjust = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 10, 1, 0));
+    d->vadjust = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 10, 1, 0));
     w->data = d;
 
     w->widget = d->image;
     /* set gobject property to give other widgets a pointer to our image widget */
     g_object_set_data(G_OBJECT(w->widget), "lua_widget", w);
-
 
     w->index = luaH_document_index;
     w->newindex = luaH_document_newindex;
