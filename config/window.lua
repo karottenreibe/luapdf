@@ -453,6 +453,24 @@ window.methods = {
         end
     end,
 
+    update_scroll = function (w, view)
+        if not view then view = w:get_current() end
+        local label = w.sbar.r.scroll
+        if view then
+            local scroll = view.scroll
+            local y, max, text = scroll.y, scroll.ymax
+            if     max == 0   then text = "All"
+            elseif y   == 0   then text = "Top"
+            elseif y   == max then text = "Bot"
+            else text = string.format("%2d%% (%s/%s)", (y/max) * 100, doc.current, #doc.pages)
+            end
+            if label.text ~= text then label.text = text end
+            label:show()
+        else
+            label:hide()
+        end
+    end,
+
     update_buf = function (w)
         local buf = w.sbar.r.buf
         if w.buffer then
