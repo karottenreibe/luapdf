@@ -88,8 +88,8 @@ luaH_document_destructor(widget_t *w) {
         }
         g_ptr_array_free(d->pages, TRUE);
     }
-    g_free(d->hadjust);
-    g_free(d->vadjust);
+    g_object_unref(d->hadjust);
+    g_object_unref(d->vadjust);
     g_slice_free(document_data_t, d);
 }
 
@@ -318,6 +318,8 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
 
     switch(token)
     {
+      LUAPDF_WIDGET_INDEX_COMMON
+
       /* functions */
       PF_CASE(LOAD,     luaH_document_load)
 
@@ -407,7 +409,9 @@ widget_document(widget_t *w, luapdf_token_t UNUSED(token))
     d->zoom = 1.0;
     d->widget = gtk_event_box_new();
     d->hadjust = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 10, 1, 0));
+    g_object_ref_sink(d->hadjust);
     d->vadjust = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 10, 1, 0));
+    g_object_ref_sink(d->vadjust);
     w->data = d;
 
     /* rerender document if the scroll or geometry changes */
