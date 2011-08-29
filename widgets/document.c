@@ -257,6 +257,8 @@ document_render(document_data_t *d)
 
     /* render recorded data directly to widget */
     cairo_t *c = gdk_cairo_create(gtk_widget_get_window(w));
+    cairo_set_source_rgb(c, 1.0/256*220, 1.0/256*218, 1.0/256*213);
+    cairo_paint(c);
 
     /* render pages with scroll and zoom */
     for (guint i = 0; i < d->pages->len; ++i) {
