@@ -109,7 +109,7 @@ luaH_document_scroll_newindex(lua_State *L)
 
     gdouble value = luaL_checknumber(L, 3);
     gdouble max = gtk_adjustment_get_upper(a) -
-            gtk_adjustment_get_page_increment(a);
+            gtk_adjustment_get_page_size(a);
     gtk_adjustment_set_value(a, ((value < 0 ? 0 : value) > max ? max : value));
     return 0;
 }
@@ -129,11 +129,11 @@ luaH_document_scroll_index(lua_State *L)
 
     } else if (t == L_TK_XMAX || t == L_TK_YMAX) {
         lua_pushnumber(L, gtk_adjustment_get_upper(a) -
-                gtk_adjustment_get_page_increment(a));
+                gtk_adjustment_get_page_size(a));
         return 1;
 
     } else if (t == L_TK_XPAGE_SIZE || t == L_TK_YPAGE_SIZE) {
-        lua_pushnumber(L, gtk_adjustment_get_page_increment(a));
+        lua_pushnumber(L, gtk_adjustment_get_page_size(a));
         return 1;
     }
     return 0;
@@ -224,9 +224,9 @@ luaH_document_load(lua_State *L)
 
     /* configure adjustments */
     d->hadjust->upper = width;
-    d->hadjust->page_increment = page_width;
+    d->hadjust->page_size = page_width;
     d->vadjust->upper = height;
-    d->vadjust->page_increment = page_height;
+    d->vadjust->page_size = page_height;
     return 0;
 }
 
@@ -256,11 +256,13 @@ document_render(document_data_t *d)
     for (guint i = 0; i < d->pages->len; ++i) {
         page_info_t *p = g_ptr_array_index(d->pages, i);
         cairo_rectangle_int_t page_rect = {
-            (p->x - d->hadjust->value) * d->zoom,
-            (p->y - d->vadjust->value) * d->zoom,
+            p->x * d->zoom,
+            p->y * d->zoom,
             p->w * d->zoom,
             p->h * d->zoom,
         };
+        printf("%i\t%i\t%i\t%i\n", rect.x, rect.y, rect.width, rect.height);
+        printf("%i\t%i\t%i\t%i\n", page_rect.x, page_rect.y, page_rect.width, page_rect.height);
         if (cairo_region_contains_rectangle(visible_r, &page_rect) != CAIRO_REGION_OVERLAP_OUT) {
             cairo_scale(c, d->zoom, d->zoom);
             cairo_translate(c, p->x, p->y - d->vadjust->value);
