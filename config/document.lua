@@ -87,10 +87,25 @@ document.methods = {
         doc:set_scroll_horiz(value)
     end,
 
-    -- vertical scroll of a multiple of the doc_size
+    -- Vertical scroll of a multiple of the page_size
     scroll_page = function (doc, w, value)
         local cur, max, size = doc:get_scroll_vert()
         doc:set_scroll_vert(cur + (size * value))
+    end,
+
+    -- Zoom functions
+    zoom_in = function (doc, w, step)
+        step = step or globals.zoom_step or 0.1
+        doc.zoom = doc.zoom + step
+    end,
+
+    zoom_out = function (doc, w, step)
+        step = step or globals.zoom_step or 0.1
+        doc.zoom = math.max(0.01, doc.zoom - step)
+    end,
+
+    zoom_set = function (doc, w, level)
+        doc:set_property("zoom-level", level or 1.0)
     end,
 }
 

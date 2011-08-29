@@ -299,6 +299,9 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
       /* integers */
       PI_CASE(CURRENT,  d->current + 1);
 
+      /* numbers */
+      PN_CASE(ZOOM,     d->zoom);
+
       case L_TK_SCROLL:
         return luaH_document_push_scroll_table(L);
 
@@ -330,6 +333,11 @@ luaH_document_newindex(lua_State *L, luapdf_token_t token)
             d->password = NULL;
         else
             d->password = luaL_checkstring(L, 3);
+        break;
+
+      case L_TK_ZOOM:
+        d->zoom = luaL_checknumber(L, 3);
+        document_render(d);
         break;
 
       default:
