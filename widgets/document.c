@@ -36,7 +36,6 @@ typedef struct {
     gpointer pages_ref;
     GPtrArray *pages;
     /* drawing data */
-    cairo_surface_t *surface;
     gint spacing;
     gdouble zoom;
     GtkAdjustment *hadjust;
@@ -201,6 +200,8 @@ luaH_document_load(lua_State *L)
     // TODO: push layouting into lua by emitting a signal on the doc here
     gdouble width = 0;
     gdouble height = 0;
+    gdouble page_width = 0;
+    gdouble page_height = 0;
     for (guint i = 0; i < d->pages->len; ++i) {
         page_info_t *p = g_ptr_array_index(d->pages, i);
         p->y = height;
@@ -208,6 +209,8 @@ luaH_document_load(lua_State *L)
         if (p->w > width)
             width = p->w;
         height += p->h + d->spacing;
+        if (!page_width)  page_width = p->w;
+        if (!page_height) page_height = p->h;
     }
     for (guint i = 0; i < d->pages->len; ++i) {
         page_info_t *p = g_ptr_array_index(d->pages, i);
@@ -219,9 +222,25 @@ luaH_document_load(lua_State *L)
     d->width = width;
     d->height = height;
 
+    /* configure adjustments */
+    d->hadjust->upper = width;
+    d->hadjust->page_increment = page_width;
+    d->vadjust->upper = height;
+    d->vadjust->page_increment = page_height;
+    return 0;
+}
+
+static void
+document_render(document_data_t *d)
+{
+    GtkWidget *image = GTK_WIDGET(d->image);
+    if (!gtk_widget_get_visible(image))
+        return;
+
     /* calculate visible region */
-    width = GTK_WIDGET(d->image)->allocation.width;
-    height = GTK_WIDGET(d->image)->allocation.height;
+    gdouble width = image->allocation.width;
+    gdouble height = image->allocation.height;
+    // TODO remove
     width = 600;
     height = 600;
     cairo_rectangle_int_t rect = {
@@ -234,7 +253,6 @@ luaH_document_load(lua_State *L)
 
     /* render recorded data into image surface */
     cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    d->surface = s;
     cairo_t *c = cairo_create(s);
 
     /* render pages with scroll and zoom */
@@ -261,8 +279,8 @@ luaH_document_load(lua_State *L)
     GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
     gtk_image_set_from_pixbuf(GTK_IMAGE(d->image), buf);
     cairo_destroy(c);
+    // TODO: segfaults
     //cairo_surface_destroy(is);
-    return 0;
 }
 
 static gint
@@ -323,6 +341,13 @@ luaH_document_newindex(lua_State *L, luapdf_token_t token)
     return luaH_object_emit_property_signal(L, 1);
 }
 
+void
+render_cb(gpointer *UNUSED(p), document_data_t *d)
+{
+    printf("render_cb\n");
+    document_render(d);
+}
+
 widget_t *
 widget_document(widget_t *w, luapdf_token_t token)
 {
@@ -336,6 +361,14 @@ widget_document(widget_t *w, luapdf_token_t token)
     d->hadjust = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 10, 1, 0));
     d->vadjust = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 10, 1, 0));
     w->data = d;
+
+    /* rerender view if the scroll changes */
+    g_object_connect(G_OBJECT(d->hadjust),
+      "signal::value-changed",        G_CALLBACK(render_cb),     d,
+      NULL);
+    g_object_connect(G_OBJECT(d->vadjust),
+      "signal::value-changed",        G_CALLBACK(render_cb),     d,
+      NULL);
 
     w->widget = d->image;
     /* set gobject property to give other widgets a pointer to our image widget */
