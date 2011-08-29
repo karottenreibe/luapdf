@@ -687,11 +687,6 @@ function window.new(paths)
         w:new_tab(path, {switch = false})
     end
 
-    -- Make sure something is loaded
-    if w.tabs:count() == 0 then
-        -- TODO: show something
-    end
-
     -- Set initial mode
     w:set_mode()
 
