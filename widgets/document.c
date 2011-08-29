@@ -269,15 +269,15 @@ document_render(document_data_t *d)
         }
     }
     cairo_region_destroy(visible_r);
+    cairo_destroy(c);
 
     /* render to image widget */
     gint stride = cairo_image_surface_get_stride(s);
     guchar *data = cairo_image_surface_get_data(s);
     GdkPixbuf *buf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height, stride, NULL, NULL);
     gtk_image_set_from_pixbuf(GTK_IMAGE(d->image), buf);
-    cairo_destroy(c);
     // TODO: segfaults
-    //cairo_surface_destroy(is);
+    //cairo_surface_destroy(s);
 }
 
 static gint
