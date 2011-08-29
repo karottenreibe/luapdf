@@ -109,7 +109,7 @@ luaH_document_scroll_newindex(lua_State *L)
 
     gdouble value = luaL_checknumber(L, 3);
     gdouble max = gtk_adjustment_get_upper(a) -
-            gtk_adjustment_get_page_size(a);
+            gtk_adjustment_get_page_increment(a);
     gtk_adjustment_set_value(a, ((value < 0 ? 0 : value) > max ? max : value));
     return 0;
 }
@@ -129,11 +129,11 @@ luaH_document_scroll_index(lua_State *L)
 
     } else if (t == L_TK_XMAX || t == L_TK_YMAX) {
         lua_pushnumber(L, gtk_adjustment_get_upper(a) -
-                gtk_adjustment_get_page_size(a));
+                gtk_adjustment_get_page_increment(a));
         return 1;
 
     } else if (t == L_TK_XPAGE_SIZE || t == L_TK_YPAGE_SIZE) {
-        lua_pushnumber(L, gtk_adjustment_get_page_size(a));
+        lua_pushnumber(L, gtk_adjustment_get_page_increment(a));
         return 1;
     }
     return 0;
@@ -240,9 +240,6 @@ document_render(document_data_t *d)
     /* calculate visible region */
     gdouble width = image->allocation.width;
     gdouble height = image->allocation.height;
-    // TODO remove
-    width = 600;
-    height = 600;
     cairo_rectangle_int_t rect = {
         d->hadjust->value,
         d->vadjust->value,
