@@ -9,16 +9,16 @@ document = {}
 document.init_funcs = {
     -- Update history indicator
     hist_update = function (doc, w)
-        doc:add_signal("load-status", function (v, status)
-            if w:is_current(v) then
-                w:update_hist(v)
+        doc:add_signal("load-status", function (doc, status)
+            if w:is_current(doc) then
+                w:update_hist(doc)
             end
         end)
     end,
 
     -- Update tab titles
     tablist_update = function (doc, w)
-        doc:add_signal("load-status", function (v, status)
+        doc:add_signal("load-status", function (doc, status)
             if status == "provisional" or status == "finished" or status == "failed" then
                 w:update_tablist()
             end
@@ -27,9 +27,9 @@ document.init_funcs = {
 
     -- Update scroll widget
     scroll_update = function (doc, w)
-        doc:add_signal("expose", function (v)
-            if w:is_current(v) then
-                w:update_scroll(v)
+        doc:add_signal("expose", function (doc)
+            if w:is_current(doc) then
+                w:update_scroll(doc)
             end
         end)
     end,
@@ -46,13 +46,35 @@ document.init_funcs = {
     -- Try to match a button event to a user's button binding else let the
     -- press hit the document.
     button_bind_match = function (doc, w)
-        doc:add_signal("button-release", function (v, mods, button, context)
+        doc:add_signal("button-release", function (doc, mods, button, context)
             (w.search_state or {}).marker = nil
             if w:hit(mods, button, { context = context }) then
                 return true
             end
         end)
     end,
+
+    layouting = function (doc, w)
+        doc:add_signal("layout", function (doc)
+            local width = 0
+            local height = 0
+            local spacing = 10
+
+            for _, p in ipairs(doc.pages) do
+                p.y = height
+                if (p.width > width) then width = p.width end
+                height = height + p.height + spacing
+            end
+
+            for _, p in ipairs(doc.pages) do
+                p.x = (width - p.width) / 2
+            end
+
+            if height > 0 then height = height - spacing end
+
+            return width, height
+        end)
+    end
 }
 
 -- These methods are present when you index a window instance and no window
@@ -155,12 +177,13 @@ function document.new(w, path, password)
     local d = widget{type = "document"}
     d.path = path
     d.password = password
-    d:load()
 
     -- Call document init functions
     for k, func in pairs(document.init_funcs) do
         func(d, w)
     end
+
+    d:load()
     return d
 end
 

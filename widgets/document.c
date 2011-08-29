@@ -43,8 +43,6 @@ typedef struct {
     GtkAdjustment *vadjust;
     gdouble width;
     gdouble height;
-    gdouble page_width;
-    gdouble page_height;
 } document_data_t;
 
 typedef struct {
@@ -141,23 +139,72 @@ luaH_document_scroll_index(lua_State *L)
 }
 
 static gint
-luaH_document_push_scroll_table(lua_State *L)
+luaH_document_page_newindex(lua_State *L)
 {
-    /* create scroll table */
+    page_info_t *p = lua_touserdata(L, lua_upvalueindex(1));
+    const gchar *prop = luaL_checkstring(L, 2);
+    luapdf_token_t t = l_tokenize(prop);
+
+    gdouble value = luaL_checknumber(L, 3);
+    if (t == L_TK_X) p->x = value;
+    else if (t == L_TK_Y) p->y = value;
+
+    return 0;
+}
+
+static gint
+luaH_document_page_index(lua_State *L)
+{
+    page_info_t *p = lua_touserdata(L, lua_upvalueindex(1));
+    const gchar *prop = luaL_checkstring(L, 2);
+    luapdf_token_t t = l_tokenize(prop);
+
+    switch(t)
+    {
+      PN_CASE(X, p->x)
+      PN_CASE(Y, p->y)
+      PN_CASE(WIDTH, p->w)
+      PN_CASE(HEIGHT, p->h)
+
+      default:
+        break;
+    }
+
+    return 0;
+}
+
+static gint
+luaH_document_push_indexed_table(lua_State *L, lua_CFunction index, lua_CFunction newindex, gint idx)
+{
+    /* create table */
     lua_newtable(L);
     /* setup metatable */
     lua_createtable(L, 0, 2);
     /* push __index metafunction */
     lua_pushliteral(L, "__index");
-    lua_pushvalue(L, 1); /* copy document userdata */
-    lua_pushcclosure(L, luaH_document_scroll_index, 1);
+    lua_pushvalue(L, idx); /* copy userdata */
+    lua_pushcclosure(L, index, 1);
     lua_rawset(L, -3);
     /* push __newindex metafunction */
     lua_pushliteral(L, "__newindex");
-    lua_pushvalue(L, 1); /* copy document userdata */
-    lua_pushcclosure(L, luaH_document_scroll_newindex, 1);
+    lua_pushvalue(L, idx); /* copy userdata */
+    lua_pushcclosure(L, newindex, 1);
     lua_rawset(L, -3);
     lua_setmetatable(L, -2);
+    return 1;
+}
+
+static gint
+luaH_document_push_pages(lua_State *L, document_data_t *d)
+{
+    lua_createtable(L, 0, d->pages->len);
+    for (guint i = 0; i < d->pages->len; ++i) {
+        page_info_t *p = g_ptr_array_index(d->pages, i);
+        lua_pushlightuserdata(L, p);
+        luaH_document_push_indexed_table(L, luaH_document_page_index, luaH_document_page_newindex, lua_gettop(L));
+        lua_remove(L, -2);
+        lua_rawseti(L, -2, i + 1);
+    }
     return 1;
 }
 
@@ -183,7 +230,7 @@ document_update_adjustments(document_data_t *d)
 static int
 luaH_document_load(lua_State *L)
 {
-    document_data_t *d = luaH_checkdocument_data(L, -1);
+    document_data_t *d = luaH_checkdocument_data(L, 1);
     if (!d->path)
         luaL_error(L, "no path given to document class");
     GError *error = NULL;
@@ -201,36 +248,20 @@ luaH_document_load(lua_State *L)
     for (int i = 0; i < size; ++i) {
         page_info_t *p = g_slice_new0(page_info_t);
         p->page = poppler_document_get_page(d->document, i);
+        poppler_page_get_size(p->page, &p->w, &p->h);
         g_ptr_array_add(d->pages, p);
     }
 
     /* calculate page geometry and positioning */
-    // TODO: push layouting into lua by emitting a signal on the doc here
-    gdouble width = 0;
-    gdouble height = 0;
-    gdouble page_width = 0;
-    gdouble page_height = 0;
-    for (guint i = 0; i < d->pages->len; ++i) {
-        page_info_t *p = g_ptr_array_index(d->pages, i);
-        p->y = height;
-        poppler_page_get_size(p->page, &p->w, &p->h);
-        if (p->w > width)
-            width = p->w;
-        height += p->h + d->spacing;
-        if (!page_width)  page_width = p->w;
-        if (!page_height) page_height = p->h;
-    }
-    for (guint i = 0; i < d->pages->len; ++i) {
-        page_info_t *p = g_ptr_array_index(d->pages, i);
-        p->x = (width - p->w) / 2;
-    }
-    if (height > 0)
-        height -= d->spacing;
+    gint ret = luaH_object_emit_signal(L, 1, "layout", 0, 2);
+    if (!ret)
+        luaL_error(L, "no layout was definied");
+
+    gdouble height = luaL_checknumber(L, -1);
+    gdouble width = luaL_checknumber(L, -2);
 
     d->width = width;
     d->height = height;
-    d->page_width = page_width;
-    d->page_height = page_height;
 
     /* configure adjustments */
     d->hadjust->upper = width;
@@ -301,7 +332,10 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
       PN_CASE(ZOOM,     d->zoom);
 
       case L_TK_SCROLL:
-        return luaH_document_push_scroll_table(L);
+        return luaH_document_push_indexed_table(L, luaH_document_scroll_index, luaH_document_scroll_newindex, 1);
+
+      case L_TK_PAGES:
+        return luaH_document_push_pages(L, d);
 
       default:
         break;

@@ -46,6 +46,7 @@ go_back
 go_forward
 goto
 hbox
+height
 hide
 history
 homogeneous
