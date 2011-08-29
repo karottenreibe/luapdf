@@ -42,6 +42,8 @@ typedef struct {
     GtkAdjustment *vadjust;
     gdouble width;
     gdouble height;
+    gdouble page_width;
+    gdouble page_height;
     /* widgets */
     GtkWidget *image;
 } document_data_t;
@@ -172,6 +174,13 @@ page_render(cairo_t *c, page_info_t *i)
     poppler_page_render(p, c);
 }
 
+static void
+document_update_adjustments(document_data_t *d)
+{
+    d->hadjust->page_size = d->image->allocation.width / d->zoom;
+    d->vadjust->page_size = d->image->allocation.height / d->zoom;
+}
+
 static int
 luaH_document_load(lua_State *L)
 {
@@ -221,19 +230,20 @@ luaH_document_load(lua_State *L)
 
     d->width = width;
     d->height = height;
+    d->page_width = page_width;
+    d->page_height = page_height;
 
     /* configure adjustments */
     d->hadjust->upper = width;
-    d->hadjust->page_size = page_width;
     d->vadjust->upper = height;
-    d->vadjust->page_size = page_height;
+    document_update_adjustments(d);
     return 0;
 }
 
 static void
 document_render(document_data_t *d)
 {
-    GtkWidget *image = GTK_WIDGET(d->image);
+    GtkWidget *image = d->image;
     if (!gtk_widget_get_visible(image))
         return;
 
@@ -241,8 +251,8 @@ document_render(document_data_t *d)
     gdouble width = image->allocation.width;
     gdouble height = image->allocation.height;
     cairo_rectangle_int_t rect = {
-        d->hadjust->value,
-        d->vadjust->value,
+        d->hadjust->value * d->zoom,
+        d->vadjust->value * d->zoom,
         width,
         height,
     };
@@ -261,8 +271,6 @@ document_render(document_data_t *d)
             p->w * d->zoom,
             p->h * d->zoom,
         };
-        printf("%i\t%i\t%i\t%i\n", rect.x, rect.y, rect.width, rect.height);
-        printf("%i\t%i\t%i\t%i\n", page_rect.x, page_rect.y, page_rect.width, page_rect.height);
         if (cairo_region_contains_rectangle(visible_r, &page_rect) != CAIRO_REGION_OVERLAP_OUT) {
             cairo_scale(c, d->zoom, d->zoom);
             cairo_translate(c, p->x, p->y - d->vadjust->value);
@@ -337,6 +345,7 @@ luaH_document_newindex(lua_State *L, luapdf_token_t token)
 
       case L_TK_ZOOM:
         d->zoom = luaL_checknumber(L, 3);
+        document_update_adjustments(d);
         document_render(d);
         break;
 
@@ -361,6 +370,7 @@ resize_render_cb(gpointer *UNUSED(p), GdkRectangle *r, document_data_t *d)
     if (w != r->width || h != r->height) {
         w = r->width;
         h = r->height;
+        document_update_adjustments(d);
         document_render(d);
     }
 }

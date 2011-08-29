@@ -105,7 +105,7 @@ document.methods = {
     end,
 
     zoom_set = function (doc, w, level)
-        doc:set_property("zoom-level", level or 1.0)
+        doc.zoom = level or 1.0
     end,
 }
 
