@@ -590,13 +590,16 @@ window.methods = {
     end,
 
     -- Navigate current doc or open new tab
-    -- TODO: giving a doc here won't work
-    navigate = function (w, path, doc)
-        if not doc then doc = w:get_current() end
+    navigate = function (w, path, opts)
+        opts = opts or {}
+        local doc = opts.doc or w:get_current()
         if doc then
             doc.path = path
+            doc.password = opts.password
+            doc:load()
+            return doc
         else
-            return w:new_tab(path)
+            return w:new_tab(path, opts)
         end
     end,
 
