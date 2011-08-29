@@ -273,7 +273,7 @@ document_render(document_data_t *d)
         };
         if (cairo_region_contains_rectangle(visible_r, &page_rect) != CAIRO_REGION_OVERLAP_OUT) {
             cairo_scale(c, d->zoom, d->zoom);
-            cairo_translate(c, p->x, p->y - d->vadjust->value);
+            cairo_translate(c, p->x - d->hadjust->value, p->y - d->vadjust->value);
             page_render(c, p);
             cairo_identity_matrix(c);
         }
