@@ -344,8 +344,18 @@ luaH_document_newindex(lua_State *L, luapdf_token_t token)
 void
 render_cb(gpointer *UNUSED(p), document_data_t *d)
 {
-    printf("render_cb\n");
     document_render(d);
+}
+
+void
+resize_render_cb(gpointer *UNUSED(p), GdkRectangle *r, document_data_t *d)
+{
+    static gint w, h;
+    if (w != r->width || h != r->height) {
+        w = r->width;
+        h = r->height;
+        document_render(d);
+    }
 }
 
 widget_t *
@@ -362,12 +372,16 @@ widget_document(widget_t *w, luapdf_token_t token)
     d->vadjust = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 10, 1, 0));
     w->data = d;
 
-    /* rerender view if the scroll changes */
+    /* rerender document if the scroll or geometry changes */
     g_object_connect(G_OBJECT(d->hadjust),
-      "signal::value-changed",        G_CALLBACK(render_cb),     d,
+      "signal::value-changed",        G_CALLBACK(render_cb),         d,
       NULL);
     g_object_connect(G_OBJECT(d->vadjust),
-      "signal::value-changed",        G_CALLBACK(render_cb),     d,
+      "signal::value-changed",        G_CALLBACK(render_cb),         d,
+      NULL);
+    g_object_connect(G_OBJECT(d->image),
+      "signal::realize",              G_CALLBACK(render_cb),         d,
+      "signal::size-allocate",        G_CALLBACK(resize_render_cb),  d,
       NULL);
 
     w->widget = d->image;
