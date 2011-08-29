@@ -45,7 +45,6 @@ typedef struct {
     gdouble height;
     /* widgets */
     GtkWidget *image;
-    GtkWidget *win;
 } document_data_t;
 
 typedef struct {
@@ -78,7 +77,6 @@ static void
 luaH_document_destructor(widget_t *w) {
     document_data_t *d = w->data;
     gtk_widget_destroy(GTK_WIDGET(d->image));
-    gtk_widget_destroy(GTK_WIDGET(d->win));
     /* release our reference on the document. Poppler handles freeing it */
     if (d->document)
         g_object_unref(G_OBJECT(d->document));
@@ -181,7 +179,6 @@ luaH_document_load(lua_State *L)
             p->h * d->zoom,
         };
         if (cairo_region_contains_rectangle(visible_r, &page_rect) != CAIRO_REGION_OVERLAP_OUT) {
-            printf("%i\n", i);
             cairo_scale(c, d->zoom, d->zoom);
             cairo_translate(c, p->x, p->y - d->scrolly);
             page_render(c, p);
@@ -265,16 +262,12 @@ widget_document(widget_t *w, luapdf_token_t token)
     d->spacing = 10;
     d->zoom = 1.0;
     d->image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
-    d->win = gtk_scrolled_window_new(NULL, NULL);
     w->data = d;
 
-    w->widget = d->win;
-
-    /* set gobject property to give other widgets a pointer to our webview */
+    w->widget = d->image;
+    /* set gobject property to give other widgets a pointer to our image widget */
     g_object_set_data(G_OBJECT(w->widget), "lua_widget", w);
 
-    /* add image to scrolled window */
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(d->win), d->image);
 
     w->index = luaH_document_index;
     w->newindex = luaH_document_newindex;
@@ -282,7 +275,6 @@ widget_document(widget_t *w, luapdf_token_t token)
 
     /* show widgets */
     gtk_widget_show(d->image);
-    gtk_widget_show(d->win);
 
     return w;
 }
