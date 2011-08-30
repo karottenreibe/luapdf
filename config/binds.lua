@@ -111,8 +111,8 @@ add_binds("normal", {
     key({},          "BackSpace",   function (w) w:scroll{ y = "-1.0p" } end),
 
     -- Specific scroll
-    buf("^gg$",                     function (w, b, m) w:scroll{ y = m.count.."%" } end, {count = 0}),
-    buf("^G$",                      function (w, b, m) w:scroll{ y = m.count.."%" } end, {count = 100}),
+    buf("^gg$",                     function (w, b, m) w:scroll{ y = m.count.."th" } end, {count = 1}),
+    buf("^G$",                      function (w, b, m) w:scroll{ y = m.count.."%" }  end, {count = 100}),
 
     -- Traditional scrolling commands
     key({},          "Down",        function (w) w:scroll{ y = more    } end),

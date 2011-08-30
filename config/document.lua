@@ -110,29 +110,34 @@ document.methods = {
 
 document.scroll_parse_funcs = {
     -- Abs "100px"
-    ["^(%d+)px$"] = function (_, _, px) return px end,
+    ["^(%d+)px$"] = function (_, _, px, _) return px end,
 
     -- Rel "+/-100px"
-    ["^([-+]%d+)px$"] = function (s, axis, px) return s[axis] + px end,
+    ["^([-+]%d+)px$"] = function (s, axis, px, _) return s[axis] + px end,
 
     -- Abs "10%"
-    ["^(%d+)%%$"] = function (s, axis, pc)
+    ["^(%d+)%%$"] = function (s, axis, pc, _)
         return math.ceil(s[axis.."max"] * (pc / 100))
     end,
 
     -- Rel "+/-10%"
-    ["^([-+]%d+)%%$"] = function (s, axis, pc)
+    ["^([-+]%d+)%%$"] = function (s, axis, pc, _)
         return s[axis] + math.ceil(s[axis.."max"] * (pc / 100))
     end,
 
     -- Abs "10p" (pages)
-    ["^(%d+%.?%d*)p$"] = function (s, axis, p)
+    ["^(%d+%.?%d*)p$"] = function (s, axis, p, _)
         return math.ceil(s[axis.."page_size"] * p)
     end,
 
     -- Rel "+10p" (pages)
-    ["^([-+]%d+%.?%d*)p$"] = function (s, axis, p)
+    ["^([-+]%d+%.?%d*)p$"] = function (s, axis, p, _)
         return s[axis] + math.ceil(s[axis.."page_size"] * p)
+    end,
+
+    -- Abs "10th" (page)
+    ["^(%d+)th$"] = function (s, _, p, doc)
+        return (doc.pages[p] or {}).y or s.ymax
     end,
 }
 
@@ -144,7 +149,7 @@ function document.methods.scroll(doc, w, new)
         else
             for pat, func in pairs(document.scroll_parse_funcs) do
                 local n = string.match(val, pat)
-                if n then scroll[axis] = func(scroll, axis, tonumber(n)) end
+                if n then scroll[axis] = func(scroll, axis, tonumber(n), doc) end
             end
         end
     end
