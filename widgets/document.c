@@ -401,6 +401,19 @@ expose_cb(GtkWidget *UNUSED(w), GdkEventExpose *UNUSED(e), document_data_t *d)
     document_render(d);
 }
 
+static gboolean
+scroll_event_cb(GtkWidget *UNUSED(v), GdkEventScroll *ev, widget_t *w)
+{
+    lua_State *L = globalconf.L;
+    luaH_object_push(L, w->ref);
+    luaH_modifier_table_push(L, ev->state);
+    lua_pushinteger(L, ((int)ev->direction) + 4);
+    gint ret = luaH_object_emit_signal(L, -3, "button-release", 2, 1);
+    gboolean catch = ret && lua_toboolean(L, -1) ? TRUE : FALSE;
+    lua_pop(L, ret + 1);
+    return catch;
+}
+
 widget_t *
 widget_document(widget_t *w, luapdf_token_t UNUSED(token))
 {
@@ -414,7 +427,14 @@ widget_document(widget_t *w, luapdf_token_t UNUSED(token))
     g_object_ref_sink(d->vadjust);
     w->data = d;
 
-    /* rerender document if the scroll or geometry changes */
+    w->widget = d->widget;
+    /* set gobject property to give other widgets a pointer to our image widget */
+    g_object_set_data(G_OBJECT(w->widget), "lua_widget", w);
+
+    w->index = luaH_document_index;
+    w->newindex = luaH_document_newindex;
+    w->destructor = luaH_document_destructor;
+
     g_object_connect(G_OBJECT(d->hadjust),
       "signal::value-changed",        G_CALLBACK(render_cb),         d,
       NULL);
@@ -424,15 +444,8 @@ widget_document(widget_t *w, luapdf_token_t UNUSED(token))
     g_object_connect(G_OBJECT(d->widget),
       "signal::expose-event",         G_CALLBACK(expose_cb),         d,
       "signal::size-allocate",        G_CALLBACK(resize_cb),         d,
+      "signal::scroll-event",         G_CALLBACK(scroll_event_cb),   w,
       NULL);
-
-    w->widget = d->widget;
-    /* set gobject property to give other widgets a pointer to our image widget */
-    g_object_set_data(G_OBJECT(w->widget), "lua_widget", w);
-
-    w->index = luaH_document_index;
-    w->newindex = luaH_document_newindex;
-    w->destructor = luaH_document_destructor;
 
     /* show widgets */
     gtk_widget_show(d->widget);

@@ -58,36 +58,17 @@ add_binds("all", {
     but({},     8,  function (w) w:back()     end),
     but({},     9,  function (w) w:forward()  end),
 
-    -- Open link in new tab or navigate to selection
-    but({},     2,  function (w, m)
-        -- Ignore button 2 clicks in form fields
-        if not m.context.editable then
-            -- Open hovered uri in new tab
-            local uri = w:get_current().hovered_uri
-            if uri then
-                w:new_tab(uri, {switch = false})
-            else -- Open selection in current tab
-                uri = luapdf.selection.primary
-                if uri then w:navigate(uri) end
-            end
-        end
-    end),
-
-    -- Open link in new tab when Ctrl-clicked.
-    but({"Control"}, 1, function (w, m)
-        local uri = w:get_current().hovered_uri
-        if uri then
-            w:new_tab(uri, {switch = false})
-        end
-    end),
-
     -- Zoom binds
     but({"Control"}, 4, function (w, m) w:zoom_in()  end),
     but({"Control"}, 5, function (w, m) w:zoom_out() end),
 
+    -- Vertical mouse scroll binds
+    but({},          4, function (w, m) w:scroll{ y = less } end),
+    but({},          5, function (w, m) w:scroll{ y = more } end),
+
     -- Horizontal mouse scroll binds
-    but({"Shift"},   4, function (w, m) w:scroll_horiz(less) end),
-    but({"Shift"},   5, function (w, m) w:scroll_horiz(more) end),
+    but({"Shift"},   4, function (w, m) w:scroll{ x = less } end),
+    but({"Shift"},   5, function (w, m) w:scroll{ x = more } end),
 })
 
 add_binds("normal", {
