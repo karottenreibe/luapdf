@@ -71,28 +71,6 @@ luaH_checkdocument_data(lua_State *L, gint udx)
     return d;
 }
 
-static void
-luaH_document_destructor(widget_t *w) {
-    document_data_t *d = w->data;
-    gtk_widget_destroy(GTK_WIDGET(d->widget));
-    /* release our reference on the document. Poppler handles freeing it */
-    if (d->document)
-        g_object_unref(G_OBJECT(d->document));
-    /* release our references on the pages. Poppler handles freeing it */
-    if (d->pages) {
-        for (guint i = 0; i < d->pages->len; ++i) {
-            page_info_t *p = g_ptr_array_index(d->pages, i);
-            g_object_unref(G_OBJECT(p->page));
-            cairo_surface_destroy(p->surface);
-            g_slice_free(page_info_t, p);
-        }
-        g_ptr_array_free(d->pages, TRUE);
-    }
-    g_object_unref(d->hadjust);
-    g_object_unref(d->vadjust);
-    g_slice_free(document_data_t, d);
-}
-
 static gint
 luaH_document_push_indexed_table(lua_State *L, lua_CFunction index, lua_CFunction newindex, gint idx)
 {
@@ -117,6 +95,29 @@ luaH_document_push_indexed_table(lua_State *L, lua_CFunction index, lua_CFunctio
 #include "widgets/document/render.c"
 #include "widgets/document/scroll.c"
 #include "widgets/document/pages.c"
+#include "widgets/document/printing.c"
+
+static void
+luaH_document_destructor(widget_t *w) {
+    document_data_t *d = w->data;
+    gtk_widget_destroy(GTK_WIDGET(d->widget));
+    /* release our reference on the document. Poppler handles freeing it */
+    if (d->document)
+        g_object_unref(G_OBJECT(d->document));
+    /* release our references on the pages. Poppler handles freeing it */
+    if (d->pages) {
+        for (guint i = 0; i < d->pages->len; ++i) {
+            page_info_t *p = g_ptr_array_index(d->pages, i);
+            g_object_unref(G_OBJECT(p->page));
+            cairo_surface_destroy(p->surface);
+            g_slice_free(page_info_t, p);
+        }
+        g_ptr_array_free(d->pages, TRUE);
+    }
+    g_object_unref(d->hadjust);
+    g_object_unref(d->vadjust);
+    g_slice_free(document_data_t, d);
+}
 
 static void
 document_update_adjustments(document_data_t *d)
@@ -179,6 +180,7 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
 
       /* functions */
       PF_CASE(LOAD,     luaH_document_load)
+      PF_CASE(PRINT,    luaH_document_print)
 
       /* strings */
       PS_CASE(PATH,     d->path);

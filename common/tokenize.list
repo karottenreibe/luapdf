@@ -59,6 +59,7 @@ insert
 install_path
 interval
 plugged
+print
 label
 left
 load
