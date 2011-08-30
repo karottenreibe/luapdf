@@ -231,7 +231,7 @@ add_binds("insert", {
 })
 
 add_binds({"command", "search"}, {
-    key({"Shift"},   "Insert",  function (w) w:insert_cmd(luapdf.selection.primary) end),
+    key({"Shift"},   "Insert",  function (w) w:insert_cmd(luapdf.selection.primary or luapdf.selection.clipboard) end),
     key({"Control"}, "w",       function (w) w:del_word() end),
     key({"Control"}, "u",       function (w) w:del_line() end),
     key({"Control"}, "h",       function (w) w:del_backward_char() end),
