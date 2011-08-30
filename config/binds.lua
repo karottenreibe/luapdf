@@ -146,11 +146,11 @@ add_binds("normal", {
 
     -- Clipboard
     key({},          "p",           function (w)
-                                        local uri = luapdf.selection.primary
+                                        local uri = luapdf.selection.primary or luapdf.selection.clipboard
                                         if uri then w:navigate(uri) else w:error("Empty selection.") end
                                     end),
     key({},          "P",           function (w, m)
-                                        local uri = luapdf.selection.primary
+                                        local uri = luapdf.selection.primary or luapdf.selection.clipboard
                                         if not uri then w:error("Empty selection.") return end
                                         for i = 1, m.count do w:new_tab(uri) end
                                     end, {count = 1}),
