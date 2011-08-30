@@ -129,11 +129,11 @@ add_binds("normal", {
                                     end),
 
     -- Zooming
-    key({},          "+",           function (w, m)    w:zoom_in(zoom_step  * m.count)       end, {count=1}),
-    key({},          "-",           function (w, m)    w:zoom_out(zoom_step * m.count)       end, {count=1}),
+    key({},          "+",           function (w, m)    w:zoom_in(zoom_step  * m.count) end, {count=1}),
+    key({},          "-",           function (w, m)    w:zoom_out(zoom_step * m.count) end, {count=1}),
     key({},          "=",           function (w, m)    w:zoom_set() end),
-    buf("^z[iI]$",                  function (w, b, m) w:zoom_in(zoom_step  * m.count, b == "zI") end, {count=1}),
-    buf("^z[oO]$",                  function (w, b, m) w:zoom_out(zoom_step * m.count, b == "zO") end, {count=1}),
+    buf("^zi$",                     function (w, b, m) w:zoom_in(zoom_step  * m.count) end, {count=1}),
+    buf("^zo$",                     function (w, b, m) w:zoom_out(zoom_step * m.count) end, {count=1}),
     -- Zoom reset or specific zoom
     buf("^zz$",                     function (w, b, m) w:zoom_set(m.count/100) end, {count=100}),
 
