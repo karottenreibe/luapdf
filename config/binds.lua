@@ -177,7 +177,6 @@ add_binds("normal", {
     buf("^O$",                      function (w, c) w:enter_cmd(":open "    .. (w:get_current().uri or "")) end),
     buf("^T$",                      function (w, c) w:enter_cmd(":tabopen " .. (w:get_current().uri or "")) end),
     buf("^W$",                      function (w, c) w:enter_cmd(":winopen " .. (w:get_current().uri or "")) end),
-    buf("^,g$",                     function (w, c) w:enter_cmd(":open google ") end),
 
     -- History
     key({},          "H",           function (w, m) w:back(m.count)    end),
