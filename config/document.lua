@@ -92,29 +92,6 @@ document.methods = {
         doc:set_property(k, v)
     end,
 
-    -- Scroll functions
-    scroll_vert = function (doc, w, value)
-        local cur, max = doc:get_scroll_vert()
-        if type(value) == "string" then
-            value = lousy.util.parse_scroll(cur, max, value)
-        end
-        doc:set_scroll_vert(value)
-    end,
-
-    scroll_horiz = function (doc, w, value)
-        local cur, max = doc:get_scroll_horiz()
-        if type(value) == "string" then
-            value = lousy.util.parse_scroll(cur, max, value)
-        end
-        doc:set_scroll_horiz(value)
-    end,
-
-    -- Vertical scroll of a multiple of the page_size
-    scroll_page = function (doc, w, value)
-        local cur, max, size = doc:get_scroll_vert()
-        doc:set_scroll_vert(cur + (size * value))
-    end,
-
     -- Zoom functions
     zoom_in = function (doc, w, step)
         step = step or globals.zoom_step or 0.1
