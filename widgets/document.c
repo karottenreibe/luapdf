@@ -94,86 +94,6 @@ luaH_document_destructor(widget_t *w) {
 }
 
 static gint
-luaH_document_scroll_newindex(lua_State *L)
-{
-    /* get document widget upvalue */
-    document_data_t *d = luaH_checkdocument_data(L, lua_upvalueindex(1));
-    const gchar *prop = luaL_checkstring(L, 2);
-    luapdf_token_t t = l_tokenize(prop);
-
-    GtkAdjustment *a;
-    if (t == L_TK_X)      a = d->hadjust;
-    else if (t == L_TK_Y) a = d->vadjust;
-    else return 0;
-
-    gdouble value = luaL_checknumber(L, 3);
-    gdouble max = gtk_adjustment_get_upper(a) -
-            gtk_adjustment_get_page_size(a);
-    gtk_adjustment_set_value(a, ((value < 0 ? 0 : value) > max ? max : value));
-    return 0;
-}
-
-static gint
-luaH_document_scroll_index(lua_State *L)
-{
-    document_data_t *d = luaH_checkdocument_data(L, lua_upvalueindex(1));
-    const gchar *prop = luaL_checkstring(L, 2);
-    luapdf_token_t t = l_tokenize(prop);
-
-    GtkAdjustment *a = (*prop == 'x') ? d->hadjust : d->vadjust;
-
-    if (t == L_TK_X || t == L_TK_Y) {
-        lua_pushnumber(L, gtk_adjustment_get_value(a));
-        return 1;
-
-    } else if (t == L_TK_XMAX || t == L_TK_YMAX) {
-        lua_pushnumber(L, gtk_adjustment_get_upper(a) -
-                gtk_adjustment_get_page_size(a));
-        return 1;
-
-    } else if (t == L_TK_XPAGE_SIZE || t == L_TK_YPAGE_SIZE) {
-        lua_pushnumber(L, gtk_adjustment_get_page_size(a));
-        return 1;
-    }
-    return 0;
-}
-
-static gint
-luaH_document_page_newindex(lua_State *L)
-{
-    page_info_t *p = lua_touserdata(L, lua_upvalueindex(1));
-    const gchar *prop = luaL_checkstring(L, 2);
-    luapdf_token_t t = l_tokenize(prop);
-
-    gdouble value = luaL_checknumber(L, 3);
-    if (t == L_TK_X) p->x = value;
-    else if (t == L_TK_Y) p->y = value;
-
-    return 0;
-}
-
-static gint
-luaH_document_page_index(lua_State *L)
-{
-    page_info_t *p = lua_touserdata(L, lua_upvalueindex(1));
-    const gchar *prop = luaL_checkstring(L, 2);
-    luapdf_token_t t = l_tokenize(prop);
-
-    switch(t)
-    {
-      PN_CASE(X, p->x)
-      PN_CASE(Y, p->y)
-      PN_CASE(WIDTH, p->w)
-      PN_CASE(HEIGHT, p->h)
-
-      default:
-        break;
-    }
-
-    return 0;
-}
-
-static gint
 luaH_document_push_indexed_table(lua_State *L, lua_CFunction index, lua_CFunction newindex, gint idx)
 {
     /* create table */
@@ -194,31 +114,9 @@ luaH_document_push_indexed_table(lua_State *L, lua_CFunction index, lua_CFunctio
     return 1;
 }
 
-static gint
-luaH_document_push_pages(lua_State *L, document_data_t *d)
-{
-    lua_createtable(L, 0, d->pages->len);
-    for (guint i = 0; i < d->pages->len; ++i) {
-        page_info_t *p = g_ptr_array_index(d->pages, i);
-        lua_pushlightuserdata(L, p);
-        luaH_document_push_indexed_table(L, luaH_document_page_index, luaH_document_page_newindex, lua_gettop(L));
-        lua_remove(L, -2);
-        lua_rawseti(L, -2, i + 1);
-    }
-    return 1;
-}
-
-static void
-page_render(cairo_t *c, page_info_t *i)
-{
-    PopplerPage *p = i->page;
-    /* render background */
-    cairo_rectangle(c, 0, 0, i->w, i->h);
-    cairo_set_source_rgb(c, 1, 1, 1);
-    cairo_fill(c);
-    /* render page */
-    poppler_page_render(p, c);
-}
+#include "widgets/document/render.c"
+#include "widgets/document/scroll.c"
+#include "widgets/document/pages.c"
 
 static void
 document_update_adjustments(document_data_t *d)
@@ -268,47 +166,6 @@ luaH_document_load(lua_State *L)
     d->vadjust->upper = height;
     document_update_adjustments(d);
     return 0;
-}
-
-static void
-document_render(document_data_t *d)
-{
-    GtkWidget *w = d->widget;
-
-    /* calculate visible region */
-    gdouble width = w->allocation.width;
-    gdouble height = w->allocation.height;
-    cairo_rectangle_int_t rect = {
-        d->hadjust->value * d->zoom,
-        d->vadjust->value * d->zoom,
-        width,
-        height,
-    };
-    cairo_region_t *visible_r = cairo_region_create_rectangle(&rect);
-
-    /* render recorded data directly to widget */
-    cairo_t *c = gdk_cairo_create(gtk_widget_get_window(w));
-    cairo_set_source_rgb(c, 1.0/256*220, 1.0/256*218, 1.0/256*213);
-    cairo_paint(c);
-
-    /* render pages with scroll and zoom */
-    for (guint i = 0; i < d->pages->len; ++i) {
-        page_info_t *p = g_ptr_array_index(d->pages, i);
-        cairo_rectangle_int_t page_rect = {
-            p->x * d->zoom,
-            p->y * d->zoom,
-            p->w * d->zoom,
-            p->h * d->zoom,
-        };
-        if (cairo_region_contains_rectangle(visible_r, &page_rect) != CAIRO_REGION_OVERLAP_OUT) {
-            cairo_scale(c, d->zoom, d->zoom);
-            cairo_translate(c, p->x - d->hadjust->value, p->y - d->vadjust->value);
-            page_render(c, p);
-            cairo_identity_matrix(c);
-        }
-    }
-    cairo_region_destroy(visible_r);
-    cairo_destroy(c);
 }
 
 static gint
