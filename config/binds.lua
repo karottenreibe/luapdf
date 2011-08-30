@@ -157,14 +157,16 @@ add_binds("normal", {
 
     -- Yanking
     buf("^yy$",                     function (w)
-                                        local uri = string.gsub(w:get_current().uri or "", " ", "%%20")
-                                        luapdf.selection.primary = uri
-                                        w:notify("Yanked uri: " .. uri)
+                                        local path = w:get_current().path or ""
+                                        luapdf.selection.primary = path
+                                        luapdf.selection.clipboard = path
+                                        w:notify("Yanked uri: " .. path)
                                     end),
 
     buf("^yt$",                     function (w)
                                         local title = w:get_current():get_property("title")
                                         luapdf.selection.primary = title
+                                        luapdf.selection.clipboard = title
                                         w:notify("Yanked title: " .. title)
                                     end),
 
