@@ -37,6 +37,7 @@ document_print(document_data_t *d, page_info_t *p, GtkWindow *w)
         gint index = poppler_page_get_index(p->page) - 1;
         GtkPageRange range = { index, index };
         gtk_print_settings_set_page_ranges(settings, &range, 1);
+        gtk_print_settings_set_print_pages(settings, GTK_PRINT_PAGES_RANGES);
     }
     gtk_print_operation_set_print_settings(op, settings);
 
