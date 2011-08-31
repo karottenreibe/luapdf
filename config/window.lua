@@ -123,6 +123,9 @@ window.init_funcs = {
             w:update_tab_count(idx)
             w:update_tablist()
         end)
+        w.tabs:add_signal("page-removed", function (nbook, doc)
+            w:update_win_title()
+        end)
         w.tabs:add_signal("switch-page", function (nbook, doc, idx)
             w:set_mode()
             w:update_tab_count(idx)
@@ -424,7 +427,13 @@ window.methods = {
 
     update_win_title = function (w, doc)
         if not doc then doc = w:get_current() end
-        local title = (doc.title or "(Untitled)") .. " - " .. (doc.path or "luapdf")
+        if not doc then
+            w.win.title = "luapdf"
+            return
+        end
+        local title = doc.title
+        if not title or title == "" then title = "(Untitled)" end
+        local title = title .. " - " .. doc.path .. " - luapdf"
         local max = globals.max_title_len or 80
         if #title > max then title = string.sub(title, 1, max) .. "..." end
         w.win.title = title
