@@ -424,8 +424,7 @@ window.methods = {
 
     update_win_title = function (w, doc)
         if not doc then doc = w:get_current() end
-        local path = doc.path
-        local title = (doc.title or "(Untitled)") .. " - " .. (path or "luapdf")
+        local title = (doc.title or "(Untitled)") .. " - " .. (doc.path or "luapdf")
         local max = globals.max_title_len or 80
         if #title > max then title = string.sub(title, 1, max) .. "..." end
         w.win.title = title
