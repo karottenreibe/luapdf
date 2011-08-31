@@ -258,38 +258,21 @@ luaH_document_search(lua_State *L)
     /* get the next finding */
     if (s->matches) {
         GList *match = s->last_match;
-        if (forward) {
-            if (!match) {
-                /* start from the starting page */
-                GList *m = s->matches;
-                while (m) {
-                    search_match_t *sm = (search_match_t*) m->data;
-                    if (sm->page >= start_page) {
-                        match = m;
-                        break;
-                    }
-                    m = g_list_next(m);
+        GList *start_point = forward ? s->matches : g_list_last(s->matches);
+        if (!match) {
+            /* start from the starting page */
+            GList *m = start_point;
+            while (m) {
+                search_match_t *sm = (search_match_t*) m->data;
+                if ((forward && sm->page >= start_page) || (!forward && sm->page <= start_page)) {
+                    match = m;
+                    break;
                 }
+                m = forward ? g_list_next(m) : g_list_previous(m);
             }
-            if (match) match = g_list_next(match);
-            if (!match && wrap) match = s->matches;
-        } else {
-            GList *list_end = g_list_last(s->matches);
-            if (!match) {
-                /* start from the starting page */
-                GList *m = list_end;
-                while (m) {
-                    search_match_t *sm = (search_match_t*) m->data;
-                    if (sm->page <= start_page) {
-                        match = m;
-                        break;
-                    }
-                    m = g_list_previous(m);
-                }
-            }
-            if (match) match = g_list_previous(match);
-            if (!match && wrap) match = list_end;
         }
+        if (match) match = forward ? g_list_next(match) : g_list_previous(match);
+        if (!match && wrap) match = start_point;
     }
     /* highlight it */
     document_render(d);
