@@ -1,5 +1,6 @@
 align
 append
+author
 bg
 bottom
 cache_dir
@@ -13,6 +14,7 @@ clipboard
 config_dir
 confpath
 count
+creator
 current
 current_size
 data_dir
@@ -58,8 +60,10 @@ indexof
 insert
 install_path
 interval
+keywords
 plugged
 print
+producer
 label
 left
 load
@@ -115,6 +119,7 @@ start
 started
 status
 stop
+subject
 switch
 TEMPLATES
 text

@@ -183,14 +183,20 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
       PF_CASE(PRINT,    luaH_document_print)
 
       /* strings */
-      PS_CASE(PATH,     d->path);
-      PS_CASE(PASSWORD, d->password);
+      PS_CASE(PATH,     d->path)
+      PS_CASE(PASSWORD, d->password)
+      PS_CASE(TITLE,    poppler_document_get_title(d->document))
+      PS_CASE(AUTHOR,   poppler_document_get_author(d->document))
+      PS_CASE(SUBJECT,  poppler_document_get_subject(d->document))
+      PS_CASE(KEYWORDS, poppler_document_get_keywords(d->document))
+      PS_CASE(CREATOR,  poppler_document_get_creator(d->document))
+      PS_CASE(PRODUCER, poppler_document_get_producer(d->document))
 
       /* integers */
-      PI_CASE(CURRENT,  d->current + 1);
+      PI_CASE(CURRENT,  d->current + 1)
 
       /* numbers */
-      PN_CASE(ZOOM,     d->zoom);
+      PN_CASE(ZOOM,     d->zoom)
 
       case L_TK_SCROLL:
         return luaH_document_push_indexed_table(L, luaH_document_scroll_index, luaH_document_scroll_newindex, 1);
