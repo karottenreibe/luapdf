@@ -27,6 +27,29 @@ draw_page_cb(GtkPrintOperation *UNUSED(op), GtkPrintContext *cx, int index, docu
     if (p) poppler_page_render(p->page, c);
 }
 
+static void
+begin_print_cb(GtkPrintOperation *op, GtkPrintContext *UNUSED(cx), document_data_t *d)
+{
+    GtkPrintSettings *settings = gtk_print_operation_get_print_settings(op);
+    gint n = 0;
+    GtkPageRange *ranges;
+    gint nranges;
+    switch(gtk_print_settings_get_print_pages(settings))
+    {
+      case GTK_PRINT_PAGES_ALL:
+        n = d->pages->len;
+        break;
+      case GTK_PRINT_PAGES_RANGES:
+        ranges = gtk_print_settings_get_page_ranges(settings, &nranges);
+        for (int i = 0; i < nranges; ++i)
+            n += ranges[i].end - ranges[i].start + 1;
+      default:
+        n = 1; /* selection and current page */
+        break;
+    }
+    gtk_print_operation_set_n_pages(op, n);
+}
+
 static const gchar *
 document_print(document_data_t *d, page_info_t *p, GtkWindow *w)
 {
@@ -43,6 +66,7 @@ document_print(document_data_t *d, page_info_t *p, GtkWindow *w)
 
     g_object_connect(G_OBJECT(op),
       "signal::draw-page",            G_CALLBACK(draw_page_cb),      d,
+      "signal::begin-print",          G_CALLBACK(begin_print_cb),    d,
       NULL);
 
     GError *error = NULL;
