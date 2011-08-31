@@ -111,7 +111,7 @@ add_binds("search", {
 
 -- Add search functions to document
 for k, m in pairs({
-    start_search = function (view, w, text)
+    start_search = function (doc, w, text)
         if string.match(text, "^[?/]") then
             w:set_mode("search")
             if not string.match(text, "^/$") then w:set_input(text) end
@@ -120,7 +120,7 @@ for k, m in pairs({
         end
     end,
 
-    search = function (view, w, text, forward, wrap)
+    search = function (doc, w, text, forward, wrap)
         if forward == nil then forward = true end
 
         -- Get search state (or new state)
@@ -143,7 +143,7 @@ for k, m in pairs({
             -- Haven't searched before, save some state.
             s.forward = forward
             s.wrap = wrap
-            local scroll = view.scroll
+            local scroll = doc.scroll
             s.marker = { x = scroll.x, y = scroll.y }
         else
             -- Invert direction if originally searching in reverse
@@ -152,17 +152,17 @@ for k, m in pairs({
 
         s.searched = true
         s.wrapped = false
-        s.ret = view:search(text, text ~= string.lower(text), forward, s.wrapped);
+        s.ret = doc:search(text, text ~= string.lower(text), forward, s.wrapped);
         if not s.ret and wrap then
             s.wrapped = true
-            s.ret = view:search(text, text ~= string.lower(text), forward, s.wrapped);
+            s.ret = doc:search(text, text ~= string.lower(text), forward, s.wrapped);
         end
     end,
 
-    clear_search = function (view, w, clear_state)
+    clear_search = function (doc, w, clear_state)
         w.ibar.input.fg = theme.ibar_fg
         w.ibar.input.bg = theme.ibar_bg
-        view:clear_search()
+        doc:clear_search()
         if clear_state ~= false then
             w.search_state = {}
         else
