@@ -127,6 +127,7 @@ document.methods = {
             end
         end
         doc:print(p)
+        w:notify("print successful")
     end,
 }
 
