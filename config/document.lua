@@ -115,13 +115,13 @@ document.methods = {
                 x = s.x + (s.xpage_size / 2),
                 y = s.y + (s.ypage_size / 2),
             }
-            for _, page in ipairs(doc.pages) do
+            for idx, page in ipairs(doc.pages) do
                 local l = page.x
                 local r = page.x + page.width
                 local t = page.y
                 local b = page.y + page.height
                 if l <= mid.x and r >= mid.x and t <= mid.y and b >= mid.y then
-                    p = page
+                    p = idx
                     break
                 end
             end

@@ -34,7 +34,7 @@ document_print(document_data_t *d, page_info_t *p, GtkWindow *w)
 
     GtkPrintSettings *settings = gtk_print_settings_new();
     if (p) {
-        gint index = poppler_page_get_index(p->page);
+        gint index = poppler_page_get_index(p->page) - 1;
         GtkPageRange range = { index, index };
         gtk_print_settings_set_page_ranges(settings, &range, 1);
     }
@@ -55,8 +55,11 @@ static gint
 luaH_document_print(lua_State *L)
 {
     document_data_t *d = luaH_checkdocument_data(L, 1);
-    gint index = luaL_checkinteger(L, 2);
-    page_info_t *p = g_ptr_array_index(d->pages, index);
+    page_info_t *p = NULL;
+    if (!lua_isnil(L, 2)) {
+        gint index = luaL_checkinteger(L, 2);
+        p = g_ptr_array_index(d->pages, index);
+    }
     GtkWindow *w = GTK_WINDOW(gtk_widget_get_ancestor(d->widget, GTK_TYPE_WINDOW));
     const gchar *error = document_print(d, p, w);
     if (error) luaL_error(L, error);
