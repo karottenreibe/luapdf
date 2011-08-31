@@ -27,6 +27,21 @@
 #include <poppler.h>
 
 typedef struct {
+    gint page;
+    PopplerRectangle *rectangle;
+} search_match_t;
+
+typedef struct {
+    const gchar *text;
+    gboolean case_sensitive;
+    gboolean forward;
+    gboolean wrap;
+    GList *matches;    /* of search_match_t */
+    GList *last_match; /* of search_match_t */
+    gint last_page;
+} search_data_t;
+
+typedef struct {
     GtkWidget *widget;
     /* document */
     PopplerDocument *document;
@@ -43,6 +58,8 @@ typedef struct {
     GtkAdjustment *vadjust;
     gdouble width;
     gdouble height;
+    /* searching */
+    search_data_t *last_search;
 } document_data_t;
 
 typedef struct {
@@ -168,6 +185,128 @@ luaH_document_load(lua_State *L)
     return 0;
 }
 
+static void
+document_search_match_destroy(gpointer p)
+{
+    search_match_t *sm = (search_match_t*) p;
+    g_free(sm->rectangle);
+    g_free(sm);
+}
+
+static void
+document_clear_search(document_data_t *d)
+{
+    search_data_t *s = d->last_search;
+    if (s) {
+        g_list_free_full(s->matches, document_search_match_destroy);
+        g_slice_free(search_data_t, s);
+    }
+    d->last_search = NULL;
+}
+
+static gint
+luaH_document_search(lua_State *L)
+{
+    document_data_t *d = luaH_checkdocument_data(L, 1);
+    const gchar *text = luaL_checkstring(L, 2);
+    gboolean case_sensitive = luaH_checkboolean(L, 3);
+    gboolean forward = luaH_checkboolean(L, 4);
+    gboolean wrap = luaH_checkboolean(L, 5);
+
+    // TODO: case sensitivity is ignored by poppler
+    case_sensitive = FALSE;
+
+    search_data_t *s = d->last_search;
+
+    /* init search data */
+    gint start_page = 0;
+    if (s) start_page = s->last_page;
+    /* clear old search if search term or case sensitivity changed */
+    if (s && (g_strcmp0(s->text, text) != 0 || s->case_sensitive != case_sensitive)) {
+        document_clear_search(d);
+        s = NULL;
+    }
+    if (!s) {
+        s = g_slice_new(search_data_t);
+        s->text = text;
+        s->case_sensitive = case_sensitive;
+        s->forward = forward;
+        s->wrap = wrap;
+        s->last_page = start_page;
+        s->last_match = NULL;
+
+        /* get all matches */
+        GList *matches = NULL;
+        for (guint i = 0; i < d->pages->len; ++i) {
+            page_info_t *p = g_ptr_array_index(d->pages, i);
+            GList *poppler_matches = poppler_page_find_text(p->page, text);
+            GList *m = poppler_matches;
+            while (m) {
+                search_match_t *sm = g_new(search_match_t, 1);
+                sm->page = i;
+                sm->rectangle = (PopplerRectangle*) m->data;
+                matches = g_list_prepend(matches, sm);
+                m = g_list_next(m);
+            }
+            g_list_free(poppler_matches);
+        }
+        s->matches = g_list_reverse(matches);
+
+        d->last_search = s;
+    }
+
+    /* get the next finding */
+    if (s->matches) {
+        GList *match = s->last_match;
+        if (forward) {
+            if (!match) {
+                /* start from the starting page */
+                GList *m = s->matches;
+                while (m) {
+                    search_match_t *sm = (search_match_t*) m->data;
+                    if (sm->page >= start_page) {
+                        match = m;
+                        break;
+                    }
+                    m = g_list_next(m);
+                }
+            }
+            if (match) match = g_list_next(match);
+            if (!match && wrap) match = s->matches;
+        } else {
+            GList *list_end = g_list_last(s->matches);
+            if (!match) {
+                /* start from the starting page */
+                GList *m = list_end;
+                while (m) {
+                    search_match_t *sm = (search_match_t*) m->data;
+                    if (sm->page <= start_page) {
+                        match = m;
+                        break;
+                    }
+                    m = g_list_previous(m);
+                }
+            }
+            if (match) match = g_list_previous(match);
+            if (!match && wrap) match = list_end;
+        }
+    }
+    /* highlight it */
+    document_render(d);
+
+    gboolean success = (s->last_match != NULL);
+    lua_pushboolean(L, success);
+    return 1;
+}
+
+static gint
+luaH_document_clear_search(lua_State *L)
+{
+    document_data_t *d = luaH_checkdocument_data(L, 1);
+    document_clear_search(d);
+    return 0;
+}
+
 static gint
 luaH_document_index(lua_State *L, luapdf_token_t token)
 {
@@ -178,8 +317,10 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
       LUAPDF_WIDGET_INDEX_COMMON
 
       /* functions */
-      PF_CASE(LOAD,     luaH_document_load)
-      PF_CASE(PRINT,    luaH_document_print)
+      PF_CASE(LOAD,         luaH_document_load)
+      PF_CASE(PRINT,        luaH_document_print)
+      PF_CASE(SEARCH,       luaH_document_search)
+      PF_CASE(CLEAR_SEARCH, luaH_document_clear_search)
 
       /* strings */
       PS_CASE(PATH,     d->path)
