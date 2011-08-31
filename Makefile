@@ -40,6 +40,8 @@ $(OBJS): $(HEADS) config.mk
 	@echo $(CC) -c $< -o $@
 	@$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
+widgets/document.o: $(wildcard widgets/document/*.c)
+
 luapdf: $(OBJS)
 	@echo $(CC) -o $@ $(OBJS)
 	@$(CC) -o $@ $(OBJS) $(LDFLAGS)
