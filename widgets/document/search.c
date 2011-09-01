@@ -33,7 +33,7 @@ document_clear_search(document_data_t *d)
     search_data_t *s = d->last_search;
     if (s) {
         g_list_free_full(s->matches, document_search_match_destroy);
-        g_slice_free(search_data_t, s);
+        g_free(s);
     }
     d->last_search = NULL;
 }
@@ -61,7 +61,7 @@ luaH_document_search(lua_State *L)
         s = NULL;
     }
     if (!s) {
-        s = g_slice_new(search_data_t);
+        s = g_new(search_data_t, 1);
         s->text = text;
         s->case_sensitive = case_sensitive;
         s->forward = forward;
