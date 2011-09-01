@@ -19,6 +19,17 @@
  *
  */
 
+static cairo_rectangle_int_t *
+viewport_coordinates_from_document_coordinates(cairo_rectangle_t *r, document_data_t *d)
+{
+    cairo_rectangle_int_t *vr = g_new(cairo_rectangle_int_t, 1);
+    vr->x = r->x * d->zoom;
+    vr->y = r->y * d->zoom;
+    vr->width = r->width * d->zoom;
+    vr->height = r->height * d->zoom;
+    return vr;
+}
+
 static gboolean
 viewport_coordinates_get_visible(cairo_rectangle_int_t *r, document_data_t *d)
 {
@@ -64,18 +75,14 @@ document_render(document_data_t *d)
     /* render pages with scroll and zoom */
     for (guint i = 0; i < d->pages->len; ++i) {
         page_info_t *p = g_ptr_array_index(d->pages, i);
-        cairo_rectangle_int_t page_rect = {
-            p->rectangle->x * d->zoom,
-            p->rectangle->y * d->zoom,
-            p->rectangle->width * d->zoom,
-            p->rectangle->height * d->zoom,
-        };
-        if (viewport_coordinates_get_visible(&page_rect, d)) {
+        cairo_rectangle_int_t *page_rect = viewport_coordinates_from_document_coordinates(p->rectangle, d);
+        if (viewport_coordinates_get_visible(page_rect, d)) {
             cairo_scale(c, d->zoom, d->zoom);
             cairo_translate(c, p->rectangle->x - d->hadjust->value, p->rectangle->y - d->vadjust->value);
             page_render(c, p);
             cairo_identity_matrix(c);
         }
+        g_free(page_rect);
     }
     cairo_destroy(c);
 }
