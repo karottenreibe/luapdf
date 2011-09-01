@@ -108,13 +108,13 @@ luaH_document_destructor(widget_t *w) {
             g_object_unref(G_OBJECT(p->page));
             cairo_surface_destroy(p->surface);
             g_free(p->rectangle);
-            g_slice_free(page_info_t, p);
+            g_free(p);
         }
         g_ptr_array_free(d->pages, TRUE);
     }
     g_object_unref(d->hadjust);
     g_object_unref(d->vadjust);
-    g_slice_free(document_data_t, d);
+    g_free(d);
 }
 
 static void
@@ -143,7 +143,7 @@ luaH_document_load(lua_State *L)
     const gint size = poppler_document_get_n_pages(d->document);
     d->pages = g_ptr_array_sized_new(size);
     for (int i = 0; i < size; ++i) {
-        page_info_t *p = g_slice_new0(page_info_t);
+        page_info_t *p = g_new0(page_info_t, 1);
         p->page = poppler_document_get_page(d->document, i);
         p->rectangle = g_new0(cairo_rectangle_t, 1);
         poppler_page_get_size(p->page, &p->rectangle->width, &p->rectangle->height);
@@ -281,7 +281,7 @@ scroll_event_cb(GtkWidget *UNUSED(v), GdkEventScroll *ev, widget_t *w)
 widget_t *
 widget_document(widget_t *w, luapdf_token_t UNUSED(token))
 {
-    document_data_t *d = g_slice_new0(document_data_t);
+    document_data_t *d = g_new0(document_data_t, 1);
     d->spacing = 10;
     d->zoom = 1.0;
     d->widget = gtk_event_box_new();
