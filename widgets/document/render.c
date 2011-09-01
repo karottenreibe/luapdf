@@ -24,7 +24,7 @@ page_render(cairo_t *c, page_info_t *i)
 {
     PopplerPage *p = i->page;
     /* render background */
-    cairo_rectangle(c, 0, 0, i->w, i->h);
+    cairo_rectangle(c, 0, 0, i->rectangle->width, i->rectangle->height);
     cairo_set_source_rgb(c, 1, 1, 1);
     cairo_fill(c);
     /* render page */
@@ -56,14 +56,14 @@ document_render(document_data_t *d)
     for (guint i = 0; i < d->pages->len; ++i) {
         page_info_t *p = g_ptr_array_index(d->pages, i);
         cairo_rectangle_int_t page_rect = {
-            p->x * d->zoom,
-            p->y * d->zoom,
-            p->w * d->zoom,
-            p->h * d->zoom,
+            p->rectangle->x * d->zoom,
+            p->rectangle->y * d->zoom,
+            p->rectangle->width * d->zoom,
+            p->rectangle->height * d->zoom,
         };
         if (cairo_region_contains_rectangle(visible_r, &page_rect) != CAIRO_REGION_OVERLAP_OUT) {
             cairo_scale(c, d->zoom, d->zoom);
-            cairo_translate(c, p->x - d->hadjust->value, p->y - d->vadjust->value);
+            cairo_translate(c, p->rectangle->x - d->hadjust->value, p->rectangle->y - d->vadjust->value);
             page_render(c, p);
             cairo_identity_matrix(c);
         }

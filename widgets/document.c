@@ -47,10 +47,7 @@ typedef struct {
 
 typedef struct {
     PopplerPage *page;
-    gdouble x;
-    gdouble y;
-    gdouble w;
-    gdouble h;
+    cairo_rectangle_t *rectangle;
     cairo_surface_t *surface;
 } page_info_t;
 
@@ -110,6 +107,7 @@ luaH_document_destructor(widget_t *w) {
             page_info_t *p = g_ptr_array_index(d->pages, i);
             g_object_unref(G_OBJECT(p->page));
             cairo_surface_destroy(p->surface);
+            g_free(p->rectangle);
             g_slice_free(page_info_t, p);
         }
         g_ptr_array_free(d->pages, TRUE);
@@ -147,7 +145,8 @@ luaH_document_load(lua_State *L)
     for (int i = 0; i < size; ++i) {
         page_info_t *p = g_slice_new0(page_info_t);
         p->page = poppler_document_get_page(d->document, i);
-        poppler_page_get_size(p->page, &p->w, &p->h);
+        p->rectangle = g_new0(cairo_rectangle_t, 1);
+        poppler_page_get_size(p->page, &p->rectangle->width, &p->rectangle->height);
         g_ptr_array_add(d->pages, p);
     }
 

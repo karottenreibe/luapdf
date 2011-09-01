@@ -27,8 +27,8 @@ luaH_document_page_newindex(lua_State *L)
     luapdf_token_t t = l_tokenize(prop);
 
     gdouble value = luaL_checknumber(L, 3);
-    if (t == L_TK_X) p->x = value;
-    else if (t == L_TK_Y) p->y = value;
+    if (t == L_TK_X) p->rectangle->x = value;
+    else if (t == L_TK_Y) p->rectangle->y = value;
 
     return 0;
 }
@@ -42,10 +42,10 @@ luaH_document_page_index(lua_State *L)
 
     switch(t)
     {
-      PN_CASE(X, p->x)
-      PN_CASE(Y, p->y)
-      PN_CASE(WIDTH, p->w)
-      PN_CASE(HEIGHT, p->h)
+      PN_CASE(X, p->rectangle->x)
+      PN_CASE(Y, p->rectangle->y)
+      PN_CASE(WIDTH, p->rectangle->width)
+      PN_CASE(HEIGHT, p->rectangle->height)
 
       default:
         break;
