@@ -19,10 +19,10 @@
  *
  */
 
-static cairo_rectangle_int_t *
+static cairo_rectangle_t *
 page_coordinates_from_pdf_coordinates(PopplerRectangle *r, page_info_t *p)
 {
-    cairo_rectangle_int_t *pc = g_new(cairo_rectangle_int_t, 1);
+    cairo_rectangle_t *pc = g_new(cairo_rectangle_t, 1);
     gdouble x1 = r->x1;
     gdouble x2 = r->x2;
     gdouble y1 = p->rectangle->height - r->y1;
@@ -34,10 +34,10 @@ page_coordinates_from_pdf_coordinates(PopplerRectangle *r, page_info_t *p)
     return pc;
 }
 
-static cairo_rectangle_int_t *
-document_coordinates_from_page_coordinates(cairo_rectangle_int_t *r, page_info_t *p)
+static cairo_rectangle_t *
+document_coordinates_from_page_coordinates(cairo_rectangle_t *r, page_info_t *p)
 {
-    cairo_rectangle_int_t *dc = g_new(cairo_rectangle_int_t, 1);
+    cairo_rectangle_t *dc = g_new(cairo_rectangle_t, 1);
     dc->x = p->rectangle->x + r->x;
     dc->y = p->rectangle->y + r->y;
     dc->width = r->width;
@@ -113,8 +113,8 @@ document_render(document_data_t *d)
             GList *m = p->search_matches;
             while (m) {
                 PopplerRectangle *pr = (PopplerRectangle*) m->data;
-                cairo_rectangle_int_t *pc = page_coordinates_from_pdf_coordinates(pr, p);
-                cairo_rectangle_int_t *dc = document_coordinates_from_page_coordinates(pc, p);
+                cairo_rectangle_t *pc = page_coordinates_from_pdf_coordinates(pr, p);
+                cairo_rectangle_t *dc = document_coordinates_from_page_coordinates(pc, p);
                 cairo_scale(c, d->zoom, d->zoom);
                 cairo_translate(c, dc->x - d->hadjust->value, dc->y - d->vadjust->value);
                 cairo_rectangle(c, 0, 0, dc->width, dc->height);

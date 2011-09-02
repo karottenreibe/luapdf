@@ -56,14 +56,19 @@ luaH_document_highlight_match(lua_State *L)
     d->current_match = match;
 
     /* scroll to match */
-    // TODO let lua handle that
     PopplerRectangle *r = (PopplerRectangle*) match->data;
-    cairo_rectangle_int_t *pc = page_coordinates_from_pdf_coordinates(r, p);
-    cairo_rectangle_int_t *dc = document_coordinates_from_page_coordinates(pc, p);
-    d->hadjust->value = dc->x;
-    d->vadjust->value = dc->y;
+    cairo_rectangle_t *pc = page_coordinates_from_pdf_coordinates(r, p);
+    cairo_rectangle_t *dc = document_coordinates_from_page_coordinates(pc, p);
+    cairo_rectangle_int_t *vc = viewport_coordinates_from_document_coordinates(dc, d);
+    if (!viewport_coordinates_get_visible(vc, d)) {
+        GtkWidget *w = d->widget;
+        d->hadjust->value = dc->x - (w->allocation.width / 2);
+        d->vadjust->value = dc->y - (w->allocation.height / 2);
+    }
+    g_free(vc);
     g_free(dc);
     g_free(pc);
+
     document_render(d);
     return 0;
 }
