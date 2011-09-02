@@ -27,19 +27,20 @@
 #include <poppler.h>
 
 typedef struct {
-    gint page;
-    PopplerRectangle *rectangle;
-} search_match_t;
-
-typedef struct {
     const gchar *text;
     gboolean case_sensitive;
     gboolean forward;
     gboolean wrap;
-    GList *matches;    /* of search_match_t */
-    GList *last_match; /* of search_match_t */
-    gint last_page;
+    GList *current_match;
+    guint current_page;
 } search_data_t;
+
+typedef struct {
+    PopplerPage *page;
+    cairo_rectangle_t *rectangle;
+    cairo_surface_t *surface;
+    GList *search_matches;
+} page_info_t;
 
 typedef struct {
     GtkWidget *widget;
@@ -48,8 +49,6 @@ typedef struct {
     const gchar *path;
     const gchar *password;
     /* pages */
-    gint current;
-    gpointer pages_ref;
     GPtrArray *pages;
     /* drawing data */
     gint spacing;
@@ -59,14 +58,8 @@ typedef struct {
     gdouble width;
     gdouble height;
     /* searching */
-    search_data_t *last_search;
+    search_data_t *current_search;
 } document_data_t;
-
-typedef struct {
-    PopplerPage *page;
-    cairo_rectangle_t *rectangle;
-    cairo_surface_t *surface;
-} page_info_t;
 
 static widget_t*
 luaH_checkdocument(lua_State *L, gint udx)
@@ -210,9 +203,6 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
       PS_CASE(KEYWORDS, poppler_document_get_keywords(d->document))
       PS_CASE(CREATOR,  poppler_document_get_creator(d->document))
       PS_CASE(PRODUCER, poppler_document_get_producer(d->document))
-
-      /* integers */
-      PI_CASE(CURRENT,  d->current + 1)
 
       /* numbers */
       PN_CASE(ZOOM,     d->zoom)

@@ -20,22 +20,108 @@
  */
 
 static void
-document_search_match_destroy(gpointer p)
-{
-    search_match_t *sm = (search_match_t*) p;
-    g_free(sm->rectangle);
-    g_free(sm);
-}
-
-static void
 document_clear_search(document_data_t *d)
 {
-    search_data_t *s = d->last_search;
-    if (s) {
-        g_list_free_full(s->matches, document_search_match_destroy);
-        g_free(s);
+    g_free(d->current_search);
+    d->current_search = NULL;
+    for (guint i = 0; i < d->pages->len; ++i) {
+        page_info_t *p = g_ptr_array_index(d->pages, i);
+        if (p->search_matches)
+            g_list_free_full(p->search_matches, g_free);
     }
-    d->last_search = NULL;
+}
+
+static gboolean
+document_search(document_data_t *d, const gchar *text, gboolean forward, gboolean wrap, guint start_page)
+{
+    search_data_t *s = d->current_search;
+    if (!s) {
+        /* start searching from the start page again */
+        s = g_new(search_data_t, 1);
+        s->text = text;
+        s->forward = forward;
+        s->wrap = wrap;
+        s->current_match = NULL;
+        d->current_search = s;
+
+        /* get all matches */
+        for (guint i = 0; i < d->pages->len; ++i) {
+            page_info_t *p = g_ptr_array_index(d->pages, i);
+            if (p->search_matches)
+                g_list_free_full(p->search_matches, g_free);
+            p->search_matches = poppler_page_find_text(p->page, text);
+            if (p->search_matches && !s->current_match && i >= start_page) {
+                s->current_page = i;
+                s->current_match = p->search_matches;
+            }
+        }
+
+        if (!s->current_match && wrap) {
+            for (guint i = 0; i < d->pages->len; ++i) {
+                page_info_t *p = g_ptr_array_index(d->pages, i);
+                if (p->search_matches) {
+                    s->current_page = i;
+                    s->current_match = p->search_matches;
+                    break;
+                }
+            }
+        }
+
+        return s->current_match != NULL;
+    } else {
+        /* get the next/prev match */
+        if (forward) {
+            GList *m = g_list_next(s->current_match);
+            if (m) {
+                s->current_match = m;
+                return TRUE;
+            }
+            for (guint i = s->current_page + 1; i < d->pages->len; ++i) {
+                page_info_t *p = g_ptr_array_index(d->pages, i);
+                if (p->search_matches) {
+                    s->current_page = i;
+                    s->current_match = p->search_matches;
+                    return TRUE;
+                }
+            }
+            if (!wrap) return FALSE;
+
+            for (guint i = 0; i <= s->current_page; ++i) {
+                page_info_t *p = g_ptr_array_index(d->pages, i);
+                if (p->search_matches) {
+                    s->current_page = i;
+                    s->current_match = p->search_matches;
+                    return TRUE;
+                }
+            }
+            return FALSE;
+        } else {
+            GList *m = g_list_previous(s->current_match);
+            if (m) {
+                s->current_match = m;
+                return TRUE;
+            }
+            for (gint i = (gint) s->current_page - 1; i >= 0; --i) {
+                page_info_t *p = g_ptr_array_index(d->pages, i);
+                if (p->search_matches) {
+                    s->current_page = i;
+                    s->current_match = p->search_matches;
+                    return TRUE;
+                }
+            }
+            if (!wrap) return FALSE;
+
+            for (guint i = d->pages->len - 1; i >= s->current_page; --i) {
+                page_info_t *p = g_ptr_array_index(d->pages, i);
+                if (p->search_matches) {
+                    s->current_page = i;
+                    s->current_match = p->search_matches;
+                    return TRUE;
+                }
+            }
+            return FALSE;
+        }
+    }
 }
 
 static gint
@@ -43,75 +129,24 @@ luaH_document_search(lua_State *L)
 {
     document_data_t *d = luaH_checkdocument_data(L, 1);
     const gchar *text = luaL_checkstring(L, 2);
-    gboolean case_sensitive = luaH_checkboolean(L, 3);
+    // TODO: case sensitivity is ignored by poppler
     gboolean forward = luaH_checkboolean(L, 4);
     gboolean wrap = luaH_checkboolean(L, 5);
 
-    // TODO: case sensitivity is ignored by poppler
-    case_sensitive = FALSE;
-
-    search_data_t *s = d->last_search;
+    search_data_t *s = d->current_search;
 
     /* init search data */
-    gint start_page = 0;
-    if (s) start_page = s->last_page;
+    guint start_page = 0;
+    if (s) start_page = s->current_page;
     /* clear old search if search term or case sensitivity changed */
-    if (s && (g_strcmp0(s->text, text) != 0 || s->case_sensitive != case_sensitive)) {
+    if (s && g_strcmp0(s->text, text) != 0) {
         document_clear_search(d);
         s = NULL;
     }
-    if (!s) {
-        s = g_new(search_data_t, 1);
-        s->text = text;
-        s->case_sensitive = case_sensitive;
-        s->forward = forward;
-        s->wrap = wrap;
-        s->last_page = start_page;
-        s->last_match = NULL;
 
-        /* get all matches */
-        GList *matches = NULL;
-        for (guint i = 0; i < d->pages->len; ++i) {
-            page_info_t *p = g_ptr_array_index(d->pages, i);
-            GList *poppler_matches = poppler_page_find_text(p->page, text);
-            GList *m = poppler_matches;
-            while (m) {
-                search_match_t *sm = g_new(search_match_t, 1);
-                sm->page = i;
-                sm->rectangle = (PopplerRectangle*) m->data;
-                matches = g_list_prepend(matches, sm);
-                m = g_list_next(m);
-            }
-            g_list_free(poppler_matches);
-        }
-        s->matches = g_list_reverse(matches);
-
-        d->last_search = s;
-    }
-
-    /* get the next finding */
-    if (s->matches) {
-        GList *match = s->last_match;
-        GList *start_point = forward ? s->matches : g_list_last(s->matches);
-        if (!match) {
-            /* start from the starting page */
-            GList *m = start_point;
-            while (m) {
-                search_match_t *sm = (search_match_t*) m->data;
-                if ((forward && sm->page >= start_page) || (!forward && sm->page <= start_page)) {
-                    match = m;
-                    break;
-                }
-                m = forward ? g_list_next(m) : g_list_previous(m);
-            }
-        }
-        if (match) match = forward ? g_list_next(match) : g_list_previous(match);
-        if (!match && wrap) match = start_point;
-    }
-    /* highlight it */
+    gboolean success = document_search(d, text, forward, wrap, start_page);
     document_render(d);
 
-    gboolean success = (s->last_match != NULL);
     lua_pushboolean(L, success);
     return 1;
 }
