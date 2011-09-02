@@ -152,6 +152,18 @@ luaH_document_search(lua_State *L)
 }
 
 static gint
+luaH_document_highlight_match(lua_State *L)
+{
+    document_data_t *d = luaH_checkdocument_data(L, 1);
+    GList *match = lua_touserdata(L, 2);
+    if (!match)
+        luaL_typerror(L, 2, "search match");
+    d->current_search->current_match = match->data;
+    document_render(d);
+    return 0;
+}
+
+static gint
 luaH_document_clear_search(lua_State *L)
 {
     document_data_t *d = luaH_checkdocument_data(L, 1);

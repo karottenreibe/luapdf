@@ -50,6 +50,7 @@ goto
 hbox
 height
 hide
+highlight_match
 history
 homogeneous
 hpaned

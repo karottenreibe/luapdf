@@ -189,10 +189,11 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
       LUAPDF_WIDGET_INDEX_COMMON
 
       /* functions */
-      PF_CASE(LOAD,         luaH_document_load)
-      PF_CASE(PRINT,        luaH_document_print)
-      PF_CASE(SEARCH,       luaH_document_search)
-      PF_CASE(CLEAR_SEARCH, luaH_document_clear_search)
+      PF_CASE(LOAD,             luaH_document_load)
+      PF_CASE(PRINT,            luaH_document_print)
+      PF_CASE(SEARCH,           luaH_document_search)
+      PF_CASE(CLEAR_SEARCH,     luaH_document_clear_search)
+      PF_CASE(HIGHLIGHT_MATCH,  luaH_document_highlight_match)
 
       /* strings */
       PS_CASE(PATH,     d->path)
