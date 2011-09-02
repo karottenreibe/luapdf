@@ -162,7 +162,10 @@ for k, m in pairs({
     page_search = function (doc, w, text, forward, wrap)
         -- TODO forward/backward
         -- TODO start with current page
+        -- TODO scroll
         local s = w.search_state
+        if text ~= s.current_text then s.matches = nil end
+        s.current_text = text
         local m
         if not s.matches then
             -- get matches of all pages
