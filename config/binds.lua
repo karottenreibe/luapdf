@@ -268,7 +268,7 @@ add_cmds({
  -- cmd("co[mmand]",            function (w, arg, opts) .. end, opts),
     cmd("c[lose]",              function (w) w:close_tab() end),
     cmd("p[rint]",              function (w) w:print() end),
-    cmd({"printpage", "pp"},    function (w) w:print(true) end),
+    cmd({"printpage", "pp"},    function (w) w:print(w:get_current_page()) end),
     cmd("reload",               function (w) w:reload() end),
     cmd("restart",              function (w) w:restart() end),
     cmd("write",                function (w) w:save_session() end),

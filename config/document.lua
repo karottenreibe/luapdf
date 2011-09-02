@@ -107,25 +107,25 @@ document.methods = {
         doc.zoom = level or 1.0
     end,
 
-    print = function (doc, w, current_page)
-        local p
-        if current_page then
-            local s = doc.scroll
-            local mid = {
-                x = s.x + (s.xpage_size / 2),
-                y = s.y + (s.ypage_size / 2),
-            }
-            for idx, page in ipairs(doc.pages) do
-                local l = page.x
-                local r = page.x + page.width
-                local t = page.y
-                local b = page.y + page.height
-                if l <= mid.x and r >= mid.x and t <= mid.y and b >= mid.y then
-                    p = idx
-                    break
-                end
+    get_current_page = function (doc, w)
+        local s = doc.scroll
+        local mid = {
+            x = s.x + (s.xpage_size / 2),
+            y = s.y + (s.ypage_size / 2),
+        }
+        for idx, page in ipairs(doc.pages) do
+            local l = page.x
+            local r = page.x + page.width
+            local t = page.y
+            local b = page.y + page.height
+            if l <= mid.x and r >= mid.x and t <= mid.y and b >= mid.y then
+                return idx
             end
         end
+        return 0
+    end
+
+    print = function (doc, w, p)
         doc:print(p)
         w:notify("print successful")
     end,
