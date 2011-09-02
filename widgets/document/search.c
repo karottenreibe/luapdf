@@ -37,7 +37,7 @@ luaH_document_highlight_match(lua_State *L)
     document_data_t *d = luaH_checkdocument_data(L, 1);
     luaH_checktable(L, 2);
 
-    // TODO: handle this with out __data and remove __data again
+    // TODO: handle this without __data and remove __data again
     lua_pushstring(L, "page");
     lua_gettable(L, -2);
     lua_pushstring(L, "__data");
@@ -60,11 +60,12 @@ luaH_document_highlight_match(lua_State *L)
     cairo_rectangle_t *pc = page_coordinates_from_pdf_coordinates(r, p);
     cairo_rectangle_t *dc = document_coordinates_from_page_coordinates(pc, p);
     cairo_rectangle_int_t *vc = viewport_coordinates_from_document_coordinates(dc, d);
-    if (!viewport_coordinates_get_visible(vc, d)) {
-        GtkWidget *w = d->widget;
-        d->hadjust->value = dc->x - (w->allocation.width / 2);
-        d->vadjust->value = dc->y - (w->allocation.height / 2);
-    }
+    GtkWidget *w = d->widget;
+    if (!viewport_coordinates_get_visible(vc, d))
+        d->vadjust->value = dc->y - (w->allocation.height / 2 / d->zoom);
+    if (!viewport_coordinates_get_visible(vc, d))
+        d->hadjust->value = dc->x - (w->allocation.width / 2 / d->zoom);
+    document_update_adjustments(d);
     g_free(vc);
     g_free(dc);
     g_free(pc);

@@ -103,6 +103,17 @@ luaH_document_push_indexed_table(lua_State *L, lua_CFunction index, lua_CFunctio
     return 1;
 }
 
+static void
+document_update_adjustments(document_data_t *d)
+{
+    d->hadjust->page_size = d->widget->allocation.width / d->zoom;
+    d->vadjust->page_size = d->widget->allocation.height / d->zoom;
+    if (d->hadjust->value < 0)
+        d->hadjust->value = 0;
+    if (d->vadjust->value < 0)
+        d->vadjust->value = 0;
+}
+
 #include "widgets/document/render.c"
 #include "widgets/document/scroll.c"
 #include "widgets/document/search.c"
@@ -131,13 +142,6 @@ luaH_document_destructor(widget_t *w) {
     g_object_unref(d->hadjust);
     g_object_unref(d->vadjust);
     g_free(d);
-}
-
-static void
-document_update_adjustments(document_data_t *d)
-{
-    d->hadjust->page_size = d->widget->allocation.width / d->zoom;
-    d->vadjust->page_size = d->widget->allocation.height / d->zoom;
 }
 
 static int
