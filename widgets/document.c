@@ -101,9 +101,9 @@ luaH_document_push_indexed_table(lua_State *L, lua_CFunction index, lua_CFunctio
 
 #include "widgets/document/render.c"
 #include "widgets/document/scroll.c"
+#include "widgets/document/search.c"
 #include "widgets/document/pages.c"
 #include "widgets/document/printing.c"
-#include "widgets/document/search.c"
 
 static void
 luaH_document_destructor(widget_t *w) {

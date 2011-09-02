@@ -20,6 +20,21 @@
  */
 
 static gint
+luaH_push_search_matches_table(lua_State *L, page_info_t *p)
+{
+    lua_newtable(L);
+    GList *m = p->search_matches;
+    gint i = 1;
+    while(m) {
+        lua_pushlightuserdata(L, m);
+        lua_rawseti(L, -2, i);
+        i += 1;
+        m = g_list_next(m);
+    }
+    return 1;
+}
+
+static gint
 luaH_document_page_newindex(lua_State *L)
 {
     page_info_t *p = lua_touserdata(L, lua_upvalueindex(1));
@@ -46,6 +61,10 @@ luaH_document_page_index(lua_State *L)
       PN_CASE(Y, p->rectangle->y)
       PN_CASE(WIDTH, p->rectangle->width)
       PN_CASE(HEIGHT, p->rectangle->height)
+
+      case L_TK_SEARCH_MATCHES:
+        luaH_push_search_matches_table(L, p);
+        return 1;
 
       default:
         break;
