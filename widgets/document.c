@@ -211,6 +211,7 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
 
       /* numbers */
       PN_CASE(ZOOM,     d->zoom)
+      PN_CASE(CURRENT,  document_current_page(d))
 
       case L_TK_SCROLL:
         return luaH_document_push_indexed_table(L, luaH_document_scroll_index, luaH_document_scroll_newindex, 1);
