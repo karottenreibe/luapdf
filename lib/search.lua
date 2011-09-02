@@ -189,7 +189,7 @@ for k, m in pairs({
             s.cur = c
         end
         if not m then return false end
-        doc:highlight_match(m.match)
+        doc:highlight_match(m)
         return true
     end,
 

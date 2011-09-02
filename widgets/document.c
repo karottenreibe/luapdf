@@ -83,6 +83,10 @@ luaH_document_push_indexed_table(lua_State *L, lua_CFunction index, lua_CFunctio
 {
     /* create table */
     lua_newtable(L);
+    /* store light userdata */
+    lua_pushliteral(L, "__data");
+    lua_pushvalue(L, idx); /* copy userdata */
+    lua_rawset(L, -3);
     /* setup metatable */
     lua_createtable(L, 0, 2);
     /* push __index metafunction */

@@ -35,10 +35,35 @@ static gint
 luaH_document_highlight_match(lua_State *L)
 {
     document_data_t *d = luaH_checkdocument_data(L, 1);
-    GList *match = lua_touserdata(L, 2);
-    if (!match)
+    luaH_checktable(L, 2);
+
+    // TODO: handle this with out __data and remove __data again
+    lua_pushstring(L, "page");
+    lua_gettable(L, -2);
+    lua_pushstring(L, "__data");
+    lua_rawget(L, -2);
+    page_info_t *p = lua_touserdata(L, -1);
+    lua_pop(L, 2);
+
+    lua_pushstring(L, "match");
+    lua_gettable(L, -2);
+    GList *match = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+
+    if (!match || !p)
         luaL_typerror(L, 2, "search match");
+
     d->current_match = match;
+
+    /* scroll to match */
+    // TODO let lua handle that
+    PopplerRectangle *r = (PopplerRectangle*) match->data;
+    cairo_rectangle_int_t *pc = page_coordinates_from_pdf_coordinates(r, p);
+    cairo_rectangle_int_t *dc = document_coordinates_from_page_coordinates(pc, p);
+    d->hadjust->value = dc->x;
+    d->vadjust->value = dc->y;
+    g_free(dc);
+    g_free(pc);
     document_render(d);
     return 0;
 }
