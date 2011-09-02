@@ -176,13 +176,13 @@ for k, m in pairs({
                     table.insert(s.matches, { page = p, match = m })
                 end
             end
-            s.cur = 1
-            m = s.matches[1]
+            s.cur = forward and 1 or #s.matches
+            m = s.matches[s.cur]
         else
             -- get next match if possible
-            local c = s.cur + 1
-            if c > #s.matches then
-                if wrap then c = 1
+            local c = forward and s.cur + 1 or s.cur - 1
+            if c > #s.matches or c < 1 then
+                if wrap then c = forward and 1 or #s.matches
                 else return false end
             end
             m = s.matches[c]
