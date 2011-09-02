@@ -27,7 +27,7 @@ document_clear_search(document_data_t *d)
     for (guint i = 0; i < d->pages->len; ++i) {
         page_info_t *p = g_ptr_array_index(d->pages, i);
         if (p->search_matches)
-            g_list_free_full(p->search_matches, g_free);
+            g_list_free(p->search_matches);
     }
 }
 
@@ -48,7 +48,7 @@ document_search(document_data_t *d, const gchar *text, gboolean forward, gboolea
         for (guint i = 0; i < d->pages->len; ++i) {
             page_info_t *p = g_ptr_array_index(d->pages, i);
             if (p->search_matches)
-                g_list_free_full(p->search_matches, g_free);
+                g_list_free(p->search_matches);
             p->search_matches = poppler_page_find_text(p->page, text);
             if (p->search_matches && !s->current_match && i >= start_page) {
                 s->current_page = i;
