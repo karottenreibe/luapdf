@@ -118,12 +118,10 @@ document_render(document_data_t *d)
                 cairo_scale(c, d->zoom, d->zoom);
                 cairo_translate(c, dc->x - d->hadjust->value, dc->y - d->vadjust->value);
                 cairo_rectangle(c, 0, 0, dc->width, dc->height);
-                gdouble alpha;
                 if (d->current_match == m)
-                    alpha = 0.5;
+                    cairo_set_source_rgba(c, 0.5, 1, 0, 0.5);
                 else
-                    alpha = 0.3;
-                cairo_set_source_rgba(c, 1, 1, 0, alpha);
+                    cairo_set_source_rgba(c, 1, 1, 0, 0.5);
                 cairo_fill(c);
                 cairo_identity_matrix(c);
                 g_free(dc);
