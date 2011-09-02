@@ -20,6 +20,32 @@
  */
 
 static cairo_rectangle_int_t *
+page_coordinates_from_pdf_coordinates(PopplerRectangle *r, page_info_t *p)
+{
+    cairo_rectangle_int_t *pc = g_new(cairo_rectangle_int_t, 1);
+    gdouble x1 = r->x1;
+    gdouble x2 = r->x2;
+    gdouble y1 = p->rectangle->height - r->y1;
+    gdouble y2 = p->rectangle->height - r->y2;
+    pc->x = x1;
+    pc->y = y2;
+    pc->width = x2 - x1;
+    pc->height = y1 - y2;
+    return pc;
+}
+
+static cairo_rectangle_int_t *
+document_coordinates_from_page_coordinates(cairo_rectangle_int_t *r, page_info_t *p)
+{
+    cairo_rectangle_int_t *dc = g_new(cairo_rectangle_int_t, 1);
+    dc->x = p->rectangle->x + r->x;
+    dc->y = p->rectangle->y + r->y;
+    dc->width = r->width;
+    dc->height = r->height;
+    return dc;
+}
+
+static cairo_rectangle_int_t *
 viewport_coordinates_from_document_coordinates(cairo_rectangle_t *r, document_data_t *d)
 {
     cairo_rectangle_int_t *vr = g_new(cairo_rectangle_int_t, 1);
@@ -77,10 +103,33 @@ document_render(document_data_t *d)
         page_info_t *p = g_ptr_array_index(d->pages, i);
         cairo_rectangle_int_t *page_rect = viewport_coordinates_from_document_coordinates(p->rectangle, d);
         if (viewport_coordinates_get_visible(page_rect, d)) {
+            /* render page */
             cairo_scale(c, d->zoom, d->zoom);
             cairo_translate(c, p->rectangle->x - d->hadjust->value, p->rectangle->y - d->vadjust->value);
             page_render(c, p);
             cairo_identity_matrix(c);
+
+            /* render search matches */
+            GList *m = p->search_matches;
+            while (m) {
+                PopplerRectangle *pr = (PopplerRectangle*) m->data;
+                cairo_rectangle_int_t *pc = page_coordinates_from_pdf_coordinates(pr, p);
+                cairo_rectangle_int_t *dc = document_coordinates_from_page_coordinates(pc, p);
+                cairo_scale(c, d->zoom, d->zoom);
+                cairo_translate(c, dc->x - d->hadjust->value, dc->y - d->vadjust->value);
+                cairo_rectangle(c, 0, 0, dc->width, dc->height);
+                gdouble alpha;
+                if (d->current_match == m)
+                    alpha = 0.5;
+                else
+                    alpha = 0.3;
+                cairo_set_source_rgba(c, 1, 1, 0, alpha);
+                cairo_fill(c);
+                cairo_identity_matrix(c);
+                g_free(dc);
+                g_free(pc);
+                m = g_list_next(m);
+            }
         }
         g_free(page_rect);
     }
