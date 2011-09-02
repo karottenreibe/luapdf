@@ -38,7 +38,7 @@ luaH_document_highlight_match(lua_State *L)
     GList *match = lua_touserdata(L, 2);
     if (!match)
         luaL_typerror(L, 2, "search match");
-    d->current_match = match->data;
+    d->current_match = match;
     document_render(d);
     return 0;
 }
