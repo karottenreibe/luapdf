@@ -152,11 +152,42 @@ for k, m in pairs({
 
         s.searched = true
         s.wrapped = false
-        s.ret = doc:search(text, text ~= string.lower(text), forward, s.wrapped);
+        s.ret = w:page_search(text, forward, s.wrapped);
         if not s.ret and wrap then
             s.wrapped = true
-            s.ret = doc:search(text, text ~= string.lower(text), forward, s.wrapped);
+            s.ret = w:page_search(text, forward, s.wrapped);
         end
+    end,
+
+    page_search = function (doc, w, text, forward, wrap)
+        -- TODO forward/backward
+        -- TODO start with current page
+        local s = w.search_state
+        local m
+        if not s.matches then
+            -- get matches of all pages
+            s.matches = {}
+            for _, p in ipairs(doc.pages) do
+                p.search(text)
+                for _, m in ipairs(p.search_matches) do
+                    table.insert(s.matches, { page = p, match = m })
+                end
+            end
+            s.cur = 1
+            m = s.matches[1]
+        else
+            -- get next match if possible
+            local c = s.cur + 1
+            if c > #s.matches then
+                if wrap then c = 1
+                else return false end
+            end
+            m = s.matches[c]
+            s.cur = c
+        end
+        if not m then return false end
+        doc:highlight_match(m.match)
+        return true
     end,
 
     clear_search = function (doc, w, clear_state)
