@@ -160,9 +160,6 @@ for k, m in pairs({
     end,
 
     page_search = function (doc, w, text, forward, wrap)
-        -- TODO forward/backward
-        -- TODO start with current page
-        -- TODO scroll
         local s = w.search_state
         if text ~= s.current_text then s.matches = nil end
         s.current_text = text
@@ -176,8 +173,22 @@ for k, m in pairs({
                     table.insert(s.matches, { page = p, match = m })
                 end
             end
-            s.cur = forward and 1 or #s.matches
-            m = s.matches[s.cur]
+            local c
+            local matches = forward and s.matches or lousy.util.table.reverse(s.matches)
+            local start_page = w:get_current_page()
+            for i, m in ipairs(matches) do
+                if forward and m.page.index >= start_page then
+                    c = i
+                    break
+                end
+                if backward and m.page.index <= start_page then
+                    c = #matches - i + 1
+                    break
+                end
+            end
+            if not c then c = forward and 1 or #s.matches end
+            s.cur = c
+            m = s.matches[c]
         else
             -- get next match if possible
             local c = forward and s.cur + 1 or s.cur - 1

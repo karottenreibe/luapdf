@@ -20,27 +20,6 @@
  */
 
 static gint
-document_current_page(document_data_t *d)
-{
-    GtkWidget *w = d->widget;
-    gdouble midx = d->hadjust->value + (w->allocation.width / d->zoom / 2);
-    gdouble midy = d->vadjust->value + (w->allocation.height / d->zoom / 2);
-    for (guint i = 0; i < d->pages->len; ++i) {
-        page_info_t *p = g_ptr_array_index(d->pages, i);
-        cairo_rectangle_int_t rect = {
-            p->rectangle->x,
-            p->rectangle->y,
-            p->rectangle->width,
-            p->rectangle->height,
-        };
-        cairo_region_t *r = cairo_region_create_rectangle(&rect);
-        if (cairo_region_contains_point(r, midx, midy))
-            return i;
-    }
-    return 0;
-}
-
-static gint
 luaH_push_search_matches_table(lua_State *L, page_info_t *p)
 {
     lua_newtable(L);
@@ -94,10 +73,11 @@ luaH_document_page_index(lua_State *L)
         return 1;
 
       /* numbers */
-      PN_CASE(X, p->rectangle->x)
-      PN_CASE(Y, p->rectangle->y)
-      PN_CASE(WIDTH, p->rectangle->width)
-      PN_CASE(HEIGHT, p->rectangle->height)
+      PN_CASE(X,        p->rectangle->x)
+      PN_CASE(Y,        p->rectangle->y)
+      PN_CASE(WIDTH,    p->rectangle->width)
+      PN_CASE(HEIGHT,   p->rectangle->height)
+      PN_CASE(INDEX,    poppler_page_get_index(p->page) + 1)
 
       case L_TK_SEARCH_MATCHES:
         luaH_push_search_matches_table(L, p);

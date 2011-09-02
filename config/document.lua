@@ -123,7 +123,7 @@ document.methods = {
             end
         end
         return 0
-    end
+    end,
 
     print = function (doc, w, p)
         doc:print(p)

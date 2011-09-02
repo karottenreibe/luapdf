@@ -57,6 +57,7 @@ hpaned
 icon
 id
 image
+index
 indexof
 insert
 install_path
