@@ -35,6 +35,15 @@ luaH_push_search_matches_table(lua_State *L, page_info_t *p)
 }
 
 static gint
+luaH_page_search(lua_State *L)
+{
+    page_info_t *p = lua_touserdata(L, lua_upvalueindex(1));
+    const gchar *text = luaL_checkstring(L, 1);
+    p->search_matches = poppler_page_find_text(p->page, text);
+    return 0;
+}
+
+static gint
 luaH_document_page_newindex(lua_State *L)
 {
     page_info_t *p = lua_touserdata(L, lua_upvalueindex(1));
@@ -57,6 +66,13 @@ luaH_document_page_index(lua_State *L)
 
     switch(t)
     {
+      /* closures */
+      case L_TK_SEARCH:
+        lua_pushvalue(L, lua_upvalueindex(1));
+        lua_pushcclosure(L, luaH_page_search, 1);
+        return 1;
+
+      /* numbers */
       PN_CASE(X, p->rectangle->x)
       PN_CASE(Y, p->rectangle->y)
       PN_CASE(WIDTH, p->rectangle->width)
