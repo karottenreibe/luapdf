@@ -58,7 +58,7 @@ typedef struct {
     gdouble width;
     gdouble height;
     /* searching */
-    search_data_t *current_search;
+    GList *current_match;
 } document_data_t;
 
 static widget_t*
@@ -123,6 +123,7 @@ luaH_document_destructor(widget_t *w) {
         }
         g_ptr_array_free(d->pages, TRUE);
     }
+    document_clear_search(d);
     g_object_unref(d->hadjust);
     g_object_unref(d->vadjust);
     g_free(d);
@@ -191,7 +192,6 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
       /* functions */
       PF_CASE(LOAD,             luaH_document_load)
       PF_CASE(PRINT,            luaH_document_print)
-      PF_CASE(SEARCH,           luaH_document_search)
       PF_CASE(CLEAR_SEARCH,     luaH_document_clear_search)
       PF_CASE(HIGHLIGHT_MATCH,  luaH_document_highlight_match)
 
