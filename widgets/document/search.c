@@ -27,6 +27,7 @@ document_clear_search(document_data_t *d)
         page_info_t *p = g_ptr_array_index(d->pages, i);
         if (p->search_matches)
             g_list_free(p->search_matches);
+        p->search_matches = NULL;
     }
 }
 
