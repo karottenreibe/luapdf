@@ -108,10 +108,6 @@ document_update_adjustments(document_data_t *d)
 {
     d->hadjust->page_size = d->widget->allocation.width / d->zoom;
     d->vadjust->page_size = d->widget->allocation.height / d->zoom;
-    if (d->hadjust->value < 0)
-        d->hadjust->value = 0;
-    if (d->vadjust->value < 0)
-        d->vadjust->value = 0;
 }
 
 #include "widgets/document/render.c"

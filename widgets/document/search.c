@@ -59,14 +59,9 @@ luaH_document_highlight_match(lua_State *L)
     PopplerRectangle *r = (PopplerRectangle*) match->data;
     cairo_rectangle_t *pc = page_coordinates_from_pdf_coordinates(r, p);
     cairo_rectangle_t *dc = document_coordinates_from_page_coordinates(pc, p);
-    cairo_rectangle_int_t *vc = viewport_coordinates_from_document_coordinates(dc, d);
-    GtkWidget *w = d->widget;
-    if (!viewport_coordinates_get_visible(vc, d))
-        d->vadjust->value = dc->y - (w->allocation.height / 2 / d->zoom);
-    if (!viewport_coordinates_get_visible(vc, d))
-        d->hadjust->value = dc->x - (w->allocation.width / 2 / d->zoom);
-    document_update_adjustments(d);
-    g_free(vc);
+    gint clamp_margin = 10;
+    gtk_adjustment_clamp_page(d->hadjust, dc->x - clamp_margin, dc->x + dc->width + clamp_margin);
+    gtk_adjustment_clamp_page(d->vadjust, dc->y - clamp_margin, dc->y + dc->height + clamp_margin);
     g_free(dc);
     g_free(pc);
 
