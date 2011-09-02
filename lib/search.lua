@@ -199,7 +199,10 @@ for k, m in pairs({
             m = s.matches[c]
             s.cur = c
         end
-        if not m then return false end
+        if not m then
+            w:clear_search()
+            return false
+        end
         doc:highlight_match(m)
         return true
     end,
