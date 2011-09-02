@@ -118,6 +118,7 @@ document_update_adjustments(document_data_t *d)
 static void
 luaH_document_destructor(widget_t *w) {
     document_data_t *d = w->data;
+    document_clear_search(d);
     gtk_widget_destroy(GTK_WIDGET(d->widget));
     /* release our reference on the document. Poppler handles freeing it */
     if (d->document)
@@ -133,7 +134,6 @@ luaH_document_destructor(widget_t *w) {
         }
         g_ptr_array_free(d->pages, TRUE);
     }
-    document_clear_search(d);
     g_object_unref(d->hadjust);
     g_object_unref(d->vadjust);
     g_free(d);

@@ -29,6 +29,7 @@ document_clear_search(document_data_t *d)
             g_list_free(p->search_matches);
         p->search_matches = NULL;
     }
+    document_render(d);
 }
 
 static gint
