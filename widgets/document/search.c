@@ -19,6 +19,30 @@
  *
  */
 
+static gint
+luaH_push_search_matches_table(lua_State *L, page_info_t *p)
+{
+    lua_newtable(L);
+    GList *m = p->search_matches;
+    gint i = 1;
+    while (m) {
+        lua_pushlightuserdata(L, m);
+        lua_rawseti(L, -2, i);
+        i += 1;
+        m = g_list_next(m);
+    }
+    return 1;
+}
+
+static gint
+luaH_page_search(lua_State *L)
+{
+    page_info_t *p = lua_touserdata(L, lua_upvalueindex(1));
+    const gchar *text = luaL_checkstring(L, 2);
+    p->search_matches = poppler_page_find_text(p->page, text);
+    return 0;
+}
+
 static void
 document_clear_search(document_data_t *d)
 {
