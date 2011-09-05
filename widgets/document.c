@@ -110,6 +110,7 @@ document_update_adjustments(document_data_t *d)
 }
 
 #include "widgets/document/render.c"
+#include "widgets/document/index.c"
 #include "widgets/document/scroll.c"
 #include "widgets/document/search.c"
 #include "widgets/document/pages.c"
@@ -216,6 +217,9 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
 
       case L_TK_PAGES:
         return luaH_document_push_pages(L, d);
+
+      case L_TK_INDEX:
+        return luaH_document_push_index(L, poppler_index_iter_new(d->document));
 
       default:
         break;
