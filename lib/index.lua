@@ -30,6 +30,14 @@ new_mode("index", {
     end,
 })
 
+local scroll = function (doc, w, dest)
+    local p = doc.pages[dest.page]
+    if not p then return end
+    local x = p.x + dest.x
+    local y = p.y + dest.y
+    document.methods.scroll(doc, w, { x = x, y = y })
+end
+
 -- Add additional binds to quickmarks menu mode
 local key = lousy.bind.key
 add_binds("index", lousy.util.table.join({
@@ -38,21 +46,16 @@ add_binds("index", lousy.util.table.join({
     key({}, "Return", function (w)
         local row = w.menu:get()
         if row and row.dest then
-            local p = w:get_current().pages[row.dest.page]
-            if not p then return end
-            local x = p.x + row.dest.x
-            local y = p.y + row.dest.y
-            w:scroll({ x = x, y = y })
+            scroll(w:get_current(), w, row.dest)
         end
     end),
 
     -- Open quickmark in new tab
     key({}, "t", function (w)
         local row = w.menu:get()
-        if row and row.qmark then
-            for _, uri in ipairs(get(row.qmark) or {}) do
-                w:new_tab(uri, {switch = false})
-            end
+        if row and row.dest then
+            local doc = w:new_tab(w:get_current().path, {switch = false})
+            scroll(doc, w, row.dest)
         end
     end),
 
@@ -60,8 +63,9 @@ add_binds("index", lousy.util.table.join({
     key({}, "w", function (w)
         local row = w.menu:get()
         w:set_mode()
-        if row and row.qmark then
-            window.new(get(row.qmark) or {})
+        if row and row.dest then
+            local new_win = window.new({w:get_current().path})
+            scroll(new_win:get_current(), new_win, row.dest)
         end
     end),
 
