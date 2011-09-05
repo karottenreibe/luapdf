@@ -16,7 +16,7 @@ new_mode("index", {
         local build_menu
         build_menu = function (t, indent)
             for _, action in pairs(t) do
-                table.insert(rows, { indent .. action.title })
+                table.insert(rows, { indent .. action.title, dest = action.destination })
                 build_menu(action.children, indent .. "  ")
             end
         end
@@ -37,10 +37,12 @@ add_binds("index", lousy.util.table.join({
     -- Open quickmark
     key({}, "Return", function (w)
         local row = w.menu:get()
-        if row and row.qmark then
-            for i, uri in ipairs(get(row.qmark) or {}) do
-                if i == 1 then w:navigate(uri) else w:new_tab(uri, {switch = false}) end
-            end
+        if row and row.dest then
+            local p = w:get_current().pages[row.dest.page]
+            if not p then return end
+            local x = p.x + row.dest.x
+            local y = p.y + row.dest.y
+            w:scroll({ x = x, y = y })
         end
     end),
 

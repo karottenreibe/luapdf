@@ -219,7 +219,7 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
         return luaH_document_push_pages(L, d);
 
       case L_TK_INDEX:
-        return luaH_document_push_index(L, poppler_index_iter_new(d->document));
+        return luaH_document_push_index(L, poppler_index_iter_new(d->document), d);
 
       default:
         break;

@@ -20,7 +20,7 @@
  */
 
 static gint
-luaH_document_push_index(lua_State *L, PopplerIndexIter *iter)
+luaH_document_push_index(lua_State *L, PopplerIndexIter *iter, document_data_t *d)
 {
     lua_newtable(L);
     if (!iter) return 1;
@@ -35,29 +35,35 @@ luaH_document_push_index(lua_State *L, PopplerIndexIter *iter)
         lua_rawset(L, -3);
 
         if (action->any.type == POPPLER_ACTION_GOTO_DEST) {
+            PopplerDest *dest = poppler_dest_copy(action->goto_dest.dest);
+            if (dest->type == POPPLER_DEST_NAMED)
+                dest = poppler_document_find_dest(d->document, dest->named_dest);
+            page_info_t *p = g_ptr_array_index(d->pages, dest->page_num - 1);
+
             lua_pushstring(L, "destination");
             lua_createtable(L, 0, 3);
 
             lua_pushstring(L, "page");
-            lua_pushnumber(L, action->goto_dest.dest->page_num);
+            lua_pushnumber(L, dest->page_num);
             lua_rawset(L, -3);
 
             lua_pushstring(L, "x");
-            lua_pushnumber(L, action->goto_dest.dest->left);
+            lua_pushnumber(L, dest->left);
             lua_rawset(L, -3);
 
             lua_pushstring(L, "y");
-            lua_pushnumber(L, action->goto_dest.dest->top);
+            lua_pushnumber(L, p->rectangle->height - dest->top);
             lua_rawset(L, -3);
 
             lua_rawset(L, -3);
+            poppler_dest_free(dest);
         }
 
         poppler_action_free(action);
 
         lua_pushstring(L, "children");
         PopplerIndexIter *child = poppler_index_iter_get_child(iter);
-        luaH_document_push_index(L, child);
+        luaH_document_push_index(L, child, d);
         lua_rawset(L, -3);
 
         lua_rawseti(L, -2, i);
