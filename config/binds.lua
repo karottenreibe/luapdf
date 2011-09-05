@@ -275,7 +275,6 @@ add_cmds({
 
     cmd("back",                 function (w, a) w:back(tonumber(a) or 1) end),
     cmd("f[orward]",            function (w, a) w:forward(tonumber(a) or 1) end),
-    cmd("inc[rease]",           function (w, a) w:navigate(w:inc_uri(tonumber(a) or 1)) end),
     cmd("o[pen]",               function (w, a) w:navigate(a) end),
     cmd("t[abopen]",            function (w, a) w:new_tab(a) end),
     cmd("w[inopen]",            function (w, a) window.new{a} end),

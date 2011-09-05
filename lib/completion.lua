@@ -15,6 +15,7 @@ local unpack = unpack
 local lousy = require "lousy"
 local new_mode, get_mode = new_mode, get_mode
 local add_binds = add_binds
+local escape = lousy.util.escape
 local capi = { luapdf = luapdf }
 
 module "completion"
