@@ -53,6 +53,9 @@ require "binds"
 -- Optional user script loading --
 ----------------------------------
 
+-- Add document index support
+require "index"
+
 -- Add quickmarks support & manager
 require "quickmarks"
 
