@@ -168,7 +168,7 @@ for k, m in pairs({
             -- get matches of all pages
             s.matches = {}
             for _, p in ipairs(doc.pages) do
-                p.search(text)
+                p:search(text)
                 for _, m in ipairs(p.search_matches) do
                     table.insert(s.matches, { page = p, match = m })
                 end
