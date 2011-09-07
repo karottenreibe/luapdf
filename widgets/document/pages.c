@@ -55,6 +55,9 @@ luaH_document_page_index(lua_State *L)
       PN_CASE(HEIGHT,   p->rectangle->height)
       PN_CASE(INDEX,    poppler_page_get_index(p->page) + 1)
 
+      /* strings */
+      PS_CASE(TEXT,     poppler_page_get_text(p->page))
+
       case L_TK_SEARCH_MATCHES:
         luaH_push_search_matches_table(L, p);
         return 1;

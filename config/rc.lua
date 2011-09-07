@@ -80,6 +80,9 @@ require "taborder"
 -- Add command completion
 require "completion"
 
+-- Add text dumping
+require "dump"
+
 -----------------------------
 -- End user script loading --
 -----------------------------

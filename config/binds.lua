@@ -290,6 +290,7 @@ add_cmds({
             w:set_mode("lua")
         end
     end),
+
 })
 
 -- vim: et:sw=4:ts=8:sts=4:tw=80
