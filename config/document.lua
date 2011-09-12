@@ -46,7 +46,7 @@ document.init_funcs = {
     -- Try to match a button event to a user's button binding else let the
     -- press hit the document.
     button_bind_match = function (doc, w)
-        doc:add_signal("button-release", function (doc, mods, button, context)
+        doc:add_signal("button-release", function (doc, mods, button, x, y, context)
             (w.search_state or {}).marker = nil
             if w:hit(mods, button, { context = context }) then
                 return true

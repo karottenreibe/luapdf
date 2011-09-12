@@ -1,7 +1,7 @@
 /*
  * widgets/document.c - Poppler document widget
  *
- * Copyright © 2010 Fabian Streitel <karottenreibe@gmail.com>
+ * Copyright © 2010 Fabian Streitel <luapdf@rottenrei.be>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,12 +109,14 @@ document_update_adjustments(document_data_t *d)
     d->vadjust->page_size = d->widget->allocation.height / d->zoom;
 }
 
+#include "widgets/document/coordinates.c"
 #include "widgets/document/render.c"
 #include "widgets/document/index.c"
 #include "widgets/document/scroll.c"
 #include "widgets/document/search.c"
 #include "widgets/document/pages.c"
 #include "widgets/document/printing.c"
+#include "widgets/document/links.c"
 
 static void
 luaH_document_destructor(widget_t *w) {
@@ -185,6 +187,42 @@ luaH_document_load(lua_State *L)
 }
 
 static gint
+luaH_document_push_links(lua_State *L, document_data_t *d)
+{
+    lua_newtable(L);
+    for (guint i = 0; i < d->pages->len; ++i) {
+        page_info_t *p = g_ptr_array_index(d->pages, i);
+        GList *link_mapping = poppler_page_get_link_mapping(p->page);
+        GList *l = link_mapping;
+        while (l) {
+            PopplerLinkMapping *m = l->data;
+            cairo_rectangle_t *pc = page_coordinates_from_pdf_coordinates(&m->area, p);
+            cairo_rectangle_t *dc = document_coordinates_from_page_coordinates(pc, p);
+            lua_pushstring(L, "x");
+            lua_pushnumber(L, dc->x);
+            lua_rawset(L, -3);
+            lua_pushstring(L, "y");
+            lua_pushnumber(L, dc->y);
+            lua_rawset(L, -3);
+            lua_pushstring(L, "width");
+            lua_pushnumber(L, dc->width);
+            lua_rawset(L, -3);
+            lua_pushstring(L, "height");
+            lua_pushnumber(L, dc->height);
+            lua_rawset(L, -3);
+            lua_pushstring(L, "destination");
+            luaH_push_action(L, m->action, d);
+            lua_rawset(L, -3);
+            g_free(pc);
+            g_free(dc);
+            l = g_list_next(l);
+        }
+        poppler_page_free_link_mapping(link_mapping);
+    }
+    return 1;
+}
+
+static gint
 luaH_document_index(lua_State *L, luapdf_token_t token)
 {
     document_data_t *d = luaH_checkdocument_data(L, 1);
@@ -220,6 +258,9 @@ luaH_document_index(lua_State *L, luapdf_token_t token)
 
       case L_TK_INDEX:
         return luaH_document_push_index(L, poppler_index_iter_new(d->document), d);
+
+      case L_TK_LINKS:
+        return luaH_document_push_links(L, d);
 
       default:
         break;
@@ -265,35 +306,63 @@ luaH_document_newindex(lua_State *L, luapdf_token_t token)
     return luaH_object_emit_property_signal(L, 1);
 }
 
-void
+static void
 render_cb(gpointer *UNUSED(p), document_data_t *d)
 {
     document_render(d);
 }
 
-void
+static void
 resize_cb(gpointer *UNUSED(p), GdkRectangle *UNUSED(r), document_data_t *d)
 {
     document_update_adjustments(d);
 }
 
-void
+static void
 expose_cb(GtkWidget *UNUSED(w), GdkEventExpose *UNUSED(e), document_data_t *d)
 {
     document_render(d);
 }
 
 static gboolean
-scroll_event_cb(GtkWidget *UNUSED(v), GdkEventScroll *ev, widget_t *w)
+luaH_emit_button_event(lua_State *L, const gchar *event, widget_t *w, gint button, guint state, gdouble ex, gdouble ey)
 {
-    lua_State *L = globalconf.L;
+    document_data_t *d = w->data;
     luaH_object_push(L, w->ref);
-    luaH_modifier_table_push(L, ev->state);
-    lua_pushinteger(L, ((int)ev->direction) + 4);
-    gint ret = luaH_object_emit_signal(L, -3, "button-release", 2, 1);
+    luaH_modifier_table_push(L, state);
+    lua_pushinteger(L, button);
+    gdouble x, y;
+    document_coordinates_from_widget_coordinates(ex, ey, &x, &y, d);
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    gint ret = luaH_object_emit_signal(L, -5, event, 4, 1);
     gboolean catch = ret && lua_toboolean(L, -1) ? TRUE : FALSE;
     lua_pop(L, ret + 1);
     return catch;
+}
+
+static gboolean
+scroll_event_cb(GtkWidget *UNUSED(v), GdkEventScroll *ev, widget_t *w)
+{
+    return luaH_emit_button_event(globalconf.L, "button-release", w, ((int)ev->direction) + 4, ev->state, ev->x, ev->y);
+}
+
+gboolean
+document_button_cb(GtkWidget* UNUSED(win), GdkEventButton *ev, widget_t *w)
+{
+    const gchar *event;
+    switch (ev->type) {
+      case GDK_2BUTTON_PRESS:
+        event = "button-double-click";
+        break;
+      case GDK_BUTTON_RELEASE:
+        event = "button-release";
+        break;
+      default:
+        event = "button-press";
+        break;
+    }
+    return luaH_emit_button_event(globalconf.L, event, w, ev->button, ev->state, ev->x, ev->y);
 }
 
 widget_t *
@@ -324,9 +393,11 @@ widget_document(widget_t *w, luapdf_token_t UNUSED(token))
       "signal::value-changed",        G_CALLBACK(render_cb),         d,
       NULL);
     g_object_connect(G_OBJECT(d->widget),
-      "signal::expose-event",         G_CALLBACK(expose_cb),         d,
-      "signal::size-allocate",        G_CALLBACK(resize_cb),         d,
-      "signal::scroll-event",         G_CALLBACK(scroll_event_cb),   w,
+      "signal::expose-event",         G_CALLBACK(expose_cb),            d,
+      "signal::size-allocate",        G_CALLBACK(resize_cb),            d,
+      "signal::scroll-event",         G_CALLBACK(scroll_event_cb),      w,
+      "signal::button-press-event",   G_CALLBACK(document_button_cb),   w,
+      "signal::button-release-event", G_CALLBACK(document_button_cb),   w,
       NULL);
 
     /* show widgets */

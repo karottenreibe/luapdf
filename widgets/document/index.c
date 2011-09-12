@@ -20,6 +20,35 @@
  */
 
 static gint
+luaH_push_action(lua_State *L, PopplerAction *a, document_data_t *d)
+{
+    if (a->any.type == POPPLER_ACTION_GOTO_DEST) {
+        PopplerDest *dest = poppler_dest_copy(a->goto_dest.dest);
+        if (dest->type == POPPLER_DEST_NAMED)
+            dest = poppler_document_find_dest(d->document, dest->named_dest);
+        page_info_t *p = g_ptr_array_index(d->pages, dest->page_num - 1);
+
+        lua_createtable(L, 0, 3);
+
+        lua_pushstring(L, "page");
+        lua_pushnumber(L, dest->page_num);
+        lua_rawset(L, -3);
+
+        lua_pushstring(L, "x");
+        lua_pushnumber(L, dest->left);
+        lua_rawset(L, -3);
+
+        lua_pushstring(L, "y");
+        lua_pushnumber(L, p->rectangle->height - dest->top);
+        lua_rawset(L, -3);
+
+        poppler_dest_free(dest);
+    } else
+        luaL_error(L, "unknown PopplerAction detected, cannot push");
+    return 1;
+}
+
+static gint
 luaH_document_push_index(lua_State *L, PopplerIndexIter *iter, document_data_t *d)
 {
     lua_newtable(L);
@@ -34,30 +63,9 @@ luaH_document_push_index(lua_State *L, PopplerIndexIter *iter, document_data_t *
         lua_pushstring(L, action->any.title);
         lua_rawset(L, -3);
 
-        if (action->any.type == POPPLER_ACTION_GOTO_DEST) {
-            PopplerDest *dest = poppler_dest_copy(action->goto_dest.dest);
-            if (dest->type == POPPLER_DEST_NAMED)
-                dest = poppler_document_find_dest(d->document, dest->named_dest);
-            page_info_t *p = g_ptr_array_index(d->pages, dest->page_num - 1);
-
-            lua_pushstring(L, "destination");
-            lua_createtable(L, 0, 3);
-
-            lua_pushstring(L, "page");
-            lua_pushnumber(L, dest->page_num);
-            lua_rawset(L, -3);
-
-            lua_pushstring(L, "x");
-            lua_pushnumber(L, dest->left);
-            lua_rawset(L, -3);
-
-            lua_pushstring(L, "y");
-            lua_pushnumber(L, p->rectangle->height - dest->top);
-            lua_rawset(L, -3);
-
-            lua_rawset(L, -3);
-            poppler_dest_free(dest);
-        }
+        lua_pushstring(L, "destination");
+        luaH_push_action(L, action, d);
+        lua_rawset(L, -3);
 
         poppler_action_free(action);
 
