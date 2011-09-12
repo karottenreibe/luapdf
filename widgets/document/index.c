@@ -43,8 +43,10 @@ luaH_push_action(lua_State *L, PopplerAction *a, document_data_t *d)
         lua_rawset(L, -3);
 
         poppler_dest_free(dest);
-    } else
-        luaL_error(L, "unknown PopplerAction detected, cannot push");
+    } else {
+        warn("unknown PopplerAction type %i detected, cannot push", a->any.type);
+        lua_pushnil(L);
+    }
     return 1;
 }
 

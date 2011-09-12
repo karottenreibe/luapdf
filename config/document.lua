@@ -46,7 +46,7 @@ document.init_funcs = {
     -- Try to match a button event to a user's button binding else let the
     -- press hit the document.
     button_bind_match = function (doc, w)
-        doc:add_signal("button-release", function (doc, mods, button, x, y, context)
+        doc:add_signal("button-release", function (doc, mods, button, context)
             (w.search_state or {}).marker = nil
             if w:hit(mods, button, { context = context }) then
                 return true
@@ -74,7 +74,7 @@ document.init_funcs = {
 
             return width, height
         end)
-    end
+    end,
 }
 
 -- These methods are present when you index a window instance and no window
@@ -123,6 +123,14 @@ document.methods = {
             end
         end
         return 1
+    end,
+
+    scroll_to_dest = function (doc, w, dest)
+        local p = doc.pages[dest.page]
+        if not p then return end
+        local x = p.x + dest.x
+        local y = p.y + dest.y
+        document.methods.scroll(doc, w, { x = x, y = y })
     end,
 
     print = function (doc, w, p)

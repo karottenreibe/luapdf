@@ -116,7 +116,6 @@ document_update_adjustments(document_data_t *d)
 #include "widgets/document/search.c"
 #include "widgets/document/pages.c"
 #include "widgets/document/printing.c"
-#include "widgets/document/links.c"
 
 static void
 luaH_document_destructor(widget_t *w) {
@@ -190,6 +189,7 @@ static gint
 luaH_document_push_links(lua_State *L, document_data_t *d)
 {
     lua_newtable(L);
+    gint k = 1;
     for (guint i = 0; i < d->pages->len; ++i) {
         page_info_t *p = g_ptr_array_index(d->pages, i);
         GList *link_mapping = poppler_page_get_link_mapping(p->page);
@@ -198,23 +198,32 @@ luaH_document_push_links(lua_State *L, document_data_t *d)
             PopplerLinkMapping *m = l->data;
             cairo_rectangle_t *pc = page_coordinates_from_pdf_coordinates(&m->area, p);
             cairo_rectangle_t *dc = document_coordinates_from_page_coordinates(pc, p);
+            lua_createtable(L, 0, 5);
+
             lua_pushstring(L, "x");
             lua_pushnumber(L, dc->x);
             lua_rawset(L, -3);
+
             lua_pushstring(L, "y");
             lua_pushnumber(L, dc->y);
             lua_rawset(L, -3);
+
             lua_pushstring(L, "width");
             lua_pushnumber(L, dc->width);
             lua_rawset(L, -3);
+
             lua_pushstring(L, "height");
             lua_pushnumber(L, dc->height);
             lua_rawset(L, -3);
+
             lua_pushstring(L, "destination");
             luaH_push_action(L, m->action, d);
             lua_rawset(L, -3);
+
+            lua_rawseti(L, -2, k);
             g_free(pc);
             g_free(dc);
+            k += 1;
             l = g_list_next(l);
         }
         poppler_page_free_link_mapping(link_mapping);
@@ -333,9 +342,16 @@ luaH_emit_button_event(lua_State *L, const gchar *event, widget_t *w, gint butto
     lua_pushinteger(L, button);
     gdouble x, y;
     document_coordinates_from_widget_coordinates(ex, ey, &x, &y, d);
+
+    lua_createtable(L, 0, 2);
+    lua_pushstring(L, "x");
     lua_pushnumber(L, x);
+    lua_rawset(L, -3);
+    lua_pushstring(L, "y");
     lua_pushnumber(L, y);
-    gint ret = luaH_object_emit_signal(L, -5, event, 4, 1);
+    lua_rawset(L, -3);
+
+    gint ret = luaH_object_emit_signal(L, -4, event, 3, 1);
     gboolean catch = ret && lua_toboolean(L, -1) ? TRUE : FALSE;
     lua_pop(L, ret + 1);
     return catch;

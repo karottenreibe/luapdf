@@ -57,6 +57,13 @@ add_binds("all", {
     -- Mouse bindings
     but({},     8,  function (w) w:back()     end),
     but({},     9,  function (w) w:forward()  end),
+    but({},     1,  function (w, m)
+                        for _, l in ipairs(w:get_current().links) do
+                            if m.context.x >= l.x and m.context.y >= l.y and m.context.x <= l.x + l.width and m.context.y <= l.y + l.height then
+                                if l.destination then w:scroll_to_dest(l.destination) end
+                            end
+                        end
+                    end),
 
     -- Zoom binds
     but({"Control"}, 4, function (w, m) w:zoom_in()  end),
