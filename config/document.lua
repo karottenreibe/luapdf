@@ -2,6 +2,8 @@
 -- Poppler Document class --
 ----------------------------
 
+require "lfs"
+
 -- Document class table
 document = {}
 
@@ -188,7 +190,11 @@ end
 
 function document.new(w, path, password)
     local d = widget{type = "document"}
-    d.path = path
+    if string.sub(path, 1, 1) == "/" then
+        d.path = path
+    else
+        d.path = lfs.currentdir() .. "/" ..  path
+    end
     d.password = password
 
     -- Call document init functions
