@@ -231,7 +231,7 @@ window.methods = {
 
     get_tab_title = function (w, doc)
         if not doc then doc = w:get_current() end
-        return doc.title or "(Untitled)"
+        return doc.title or doc.path or "(Untitled)"
     end,
 
     -- Wrapper around the bind plugin's hit method
